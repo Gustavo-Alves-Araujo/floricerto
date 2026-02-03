@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "public": true,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/html/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/html/admin.html"
+    },
+    {
+      "source": "/carrinho",
+      "destination": "/html/carrinho.html"
+    },
+    {
+      "source": "/produto/:id",
+      "destination": "/html/produto.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/html/checkout.html"
+    },
+    {
+      "source": "/success",
+      "destination": "/html/success.html"
+    },
+    {
+      "source": "/failure",
+      "destination": "/html/failure.html"
+    },
+    {
+      "source": "/pending",
+      "destination": "/html/pending.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
