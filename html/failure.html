@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Não Aprovado - La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paper': '#F7F5F0',
+                        'ink': '#1A1A1A',
+                        'rust': '#8F4F3B',
+                        'pine': '#2F3E35'
+                    },
+                    fontFamily: {
+                        'serif': ['"Cormorant Garamond"', 'serif'],
+                        'sans': ['"Montserrat"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink font-sans">
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-12 rounded-2xl shadow-2xl max-w-2xl text-center border border-ink/5">
+            <!-- Ícone de Erro -->
+            <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+
+            <!-- Mensagem -->
+            <h1 class="text-5xl font-serif italic mb-4 text-ink">Pagamento Não Aprovado</h1>
+            <p class="text-lg text-ink/60 font-sans mb-8 leading-relaxed">
+                Infelizmente não foi possível processar seu pagamento. <br>
+                Não se preocupe, você pode tentar novamente.
+            </p>
+
+            <!-- Possíveis Causas -->
+            <div class="bg-paper rounded-xl p-6 mb-8 border border-ink/10 text-left">
+                <h2 class="text-xl font-serif italic mb-4 text-center">Possíveis Causas</h2>
+                <ul class="space-y-3 max-w-md mx-auto">
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-rust flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm text-ink/70 font-sans">Dados do cartão incorretos</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-rust flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm text-ink/70 font-sans">Saldo ou limite insuficiente</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-rust flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm text-ink/70 font-sans">Problemas na operadora do cartão</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-rust flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm text-ink/70 font-sans">Transação recusada pelo banco</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <a href="carrinho.html" class="bg-rust text-paper px-10 py-4 rounded-lg hover:bg-pine transition-all duration-300 font-sans text-xs uppercase tracking-widest shadow-lg">
+                    Tentar Novamente
+                </a>
+                <a href="index.html" class="border-2 border-ink/20 text-ink px-10 py-4 rounded-lg hover:bg-ink/5 transition-all duration-300 font-sans text-xs uppercase tracking-widest">
+                    Voltar ao Início
+                </a>
+            </div>
+
+            <!-- Alternativas -->
+            <div class="bg-pine/5 rounded-xl p-6 border border-pine/20">
+                <h3 class="font-serif text-lg italic mb-3">Outras Formas de Pagamento</h3>
+                <p class="text-sm text-ink/60 font-sans mb-4">
+                    Você também pode pagar com PIX ou Boleto Bancário. <br>
+                    Basta tentar novamente no checkout.
+                </p>
+            </div>
+
+            <!-- Contato -->
+            <div class="mt-8 pt-8 border-t border-ink/10">
+                <p class="text-sm text-ink/60 font-sans mb-3">Precisa de ajuda? Entre em contato:</p>
+                <div class="flex justify-center gap-6 text-sm">
+                    <a href="mailto:contato@lafloricultura.com" class="text-rust hover:underline font-sans">contato@lafloricultura.com</a>
+                    <span class="text-ink/30">|</span>
+                    <a href="tel:+5521999999999" class="text-rust hover:underline font-sans">(21) 99999-9999</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Capturar parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('payment_id');
+        const status = urlParams.get('status');
+        
+        if (paymentId) {
+            console.log('Payment ID:', paymentId);
+            console.log('Status:', status);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paper': '#F7F5F0',
+                        'ink': '#1A1A1A',
+                        'rust': '#8F4F3B',
+                        'pine': '#2F3E35'
+                    },
+                    fontFamily: {
+                        'serif': ['"Cormorant Garamond"', 'serif'],
+                        'sans': ['"Montserrat"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'noise': "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\" opacity=\"0.05\"/%3E%3C/svg%3E')",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-feature-settings: "pnum"; }
+        .stamp-border {
+            position: relative;
+            background: white;
+            box-shadow: 0 0 0 1px #e5e5e5;
+        }
+        .stamp-border::before {
+            content: '';
+            position: absolute;
+            top: -4px; right: -4px; bottom: -4px; left: -4px;
+            border: 1px solid #1A1A1A;
+            z-index: -1;
+        }
+        input, textarea, select {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(26, 26, 26, 0.2);
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-bottom-color: #8F4F3B;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink font-serif antialiased selection:bg-rust selection:text-white relative">
+    <div class="fixed inset-0 bg-noise pointer-events-none z-50 mix-blend-multiply"></div>
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 bg-paper/90 backdrop-blur-sm z-40 border-b border-ink/5">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-normal tracking-tight italic hover:text-rust transition-colors duration-300">
+                La Floricultura
+            </a>
+            
+             <div class="flex items-center gap-8 font-sans text-xs tracking-widest uppercase">
+                <a href="index.html" class="relative group overflow-hidden hidden md:block">
+                    <span class="group-hover:-translate-y-full inline-block transition-transform duration-300">Início</span>
+                    <span class="absolute top-full left-0 group-hover:-translate-y-full transition-transform duration-300 text-rust">Início</span>
+                </a>
+                <a href="carrinho.html" class="flex items-center gap-2 group">
+                    <span>Carrinho</span>
+                    <span class="cart-count bg-ink text-paper w-4 h-4 rounded-full flex items-center justify-center font-serif text-[10px] opacity-0 transition-opacity group-hover:opacity-100">0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Checkout Section -->
+    <section class="container mx-auto px-6 pt-32 pb-16 min-h-screen">
+        <h1 class="text-5xl italic mb-12 text-center">Finalizar Pedido</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+            <!-- Formulário -->
+            <div class="lg:col-span-2 space-y-12">
+                <form id="checkoutForm" class="space-y-12">
+                    <!-- Dados Pessoais -->
+                    <div>
+                        <h2 class="font-sans text-sm tracking-[0.2em] uppercase text-rust mb-8">Dados Pessoais</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans text-sm font-light">
+                            <div class="space-y-2">
+                                <label class="uppercase tracking-widest text-[10px] text-ink/40">Nome Completo</label>
+                                <input type="text" required class="w-full py-2">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="uppercase tracking-widest text-[10px] text-ink/40">Email</label>
+                                <input type="email" required class="w-full py-2">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="uppercase tracking-widest text-[10px] text-ink/40">Telefone</label>
+                                <input type="tel" required class="w-full py-2">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="uppercase tracking-widest text-[10px] text-ink/40">CPF</label>
+                                <input type="text" required class="w-full py-2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endereço de Entrega -->
+                    <div>
+                        <h2 class="font-sans text-sm tracking-[0.2em] uppercase text-rust mb-8">Entrega</h2>
+                        <div class="grid grid-cols-1 gap-8 font-sans text-sm font-light">
+                            <div class="grid grid-cols-3 gap-8">
+                                <div class="col-span-2 space-y-2">
+                                    <label class="uppercase tracking-widest text-[10px] text-ink/40">CEP</label>
+                                    <input type="text" required class="w-full py-2">
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" class="w-full bg-ink/5 hover:bg-ink/10 text-ink py-2 uppercase text-[10px] tracking-widest transition-colors duration-300">
+                                        Buscar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="uppercase tracking-widest text-[10px] text-ink/40">Rua</label>
+                                <input type="text" required class="w-full py-2">
+                            </div>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="space-y-2">
+                                    <label class="uppercase tracking-widest text-[10px] text-ink/40">Número</label>
+                                    <input type="text" required class="w-full py-2">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="uppercase tracking-widest text-[10px] text-ink/40">Complemento</label>
+                                    <input type="text" class="w-full py-2">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="space-y-2">
+                                    <label class="uppercase tracking-widest text-[10px] text-ink/40">Bairro</label>
+                                    <input type="text" required class="w-full py-2">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="uppercase tracking-widest text-[10px] text-ink/40">Cidade</label>
+                                    <input type="text" required class="w-full py-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Forma de Pagamento -->
+                    <div>
+                        <h2 class="font-sans text-sm tracking-[0.2em] uppercase text-rust mb-8">Pagamento</h2>
+                        <div class="space-y-4 font-sans text-sm font-light">
+                            <label class="flex items-center gap-4 cursor-pointer group">
+                                <div class="relative flex items-center">
+                                    <input type="radio" name="payment" value="credit" class="peer appearance-none w-4 h-4 border border-ink/20 rounded-full checked:border-rust checked:border-4 transition-all">
+                                </div>
+                                <span class="group-hover:text-rust transition-colors">Cartão de Crédito</span>
+                            </label>
+                            <label class="flex items-center gap-4 cursor-pointer group">
+                                <div class="relative flex items-center">
+                                    <input type="radio" name="payment" value="debit" class="peer appearance-none w-4 h-4 border border-ink/20 rounded-full checked:border-rust checked:border-4 transition-all">
+                                </div>
+                                <span class="group-hover:text-rust transition-colors">Cartão de Débito</span>
+                            </label>
+                            <label class="flex items-center gap-4 cursor-pointer group">
+                                <div class="relative flex items-center">
+                                    <input type="radio" name="payment" value="pix" class="peer appearance-none w-4 h-4 border border-ink/20 rounded-full checked:border-rust checked:border-4 transition-all">
+                                </div>
+                                <span class="group-hover:text-rust transition-colors">PIX</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div>
+                        <h2 class="font-sans text-sm tracking-[0.2em] uppercase text-rust mb-8">Personalização</h2>
+                        <div class="space-y-2 font-sans text-sm font-light">
+                            <label class="uppercase tracking-widest text-[10px] text-ink/40">Mensagem no Cartão (Opcional)</label>
+                            <textarea rows="3" class="w-full py-2 resize-none" placeholder="Escreva sua mensagem..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Resumo do Pedido -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-32">
+                     <div class="p-8 stamp-border bg-white/50 backdrop-blur-sm">
+                        <h2 class="font-sans text-xs tracking-[0.2em] uppercase mb-8 border-b border-ink/10 pb-4">Seu Pedido</h2>
+                        
+                        <div id="orderSummary" class="space-y-4 mb-8 font-sans text-sm font-light max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                           <!-- Preenchido via JS -->
+                        </div>
+                        
+                        <div class="border-t border-ink/10 pt-4 flex justify-between text-lg font-normal mb-8">
+                            <span>Total</span>
+                            <span id="summaryTotalDisplay">R$ 0,00</span>
+                        </div>
+
+                        <button type="submit" form="checkoutForm" class="block w-full bg-ink text-paper py-4 text-center font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300 mb-4">
+                            Confirmar Pedido
+                        </button>
+                        
+                        <p class="text-center font-serif italic text-xs text-ink/40">
+                             Ambiente seguro. Checkout demonstrativo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#EBE8E0] pt-20 pb-10 border-t-4 border-double border-ink/10 mt-auto">
+        <div class="container mx-auto px-6">
+            <div class="border-t border-ink/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-sans text-ink/40 uppercase tracking-wider">
+                <p>&copy; 2026 La Floricultura. Rio de Janeiro.</p>
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-rust transition-colors">Privacidade</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/produtos.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        function renderOrderSummary() {
+            const cart = getCart();
+            const total = getCartTotal();
+            const summaryDiv = document.getElementById('orderSummary');
+            const summaryTotalDisplay = document.getElementById('summaryTotalDisplay');
+
+            if (cart.length === 0) {
+                window.location.href = 'carrinho.html';
+                return;
+            }
+
+            summaryDiv.innerHTML = cart.map(item => `
+                <div class="flex justify-between text-ink/80">
+                    <span class="truncate pr-4">${item.nome} <span class="text-xs text-ink/40">x${item.quantidade}</span></span>
+                    <span class="whitespace-nowrap">R$ ${(item.preco * item.quantidade).toFixed(2)}</span>
+                </div>
+            `).join('');
+            
+            summaryDiv.innerHTML += `
+                <div class="border-t border-ink/5 pt-3 mt-4 flex justify-between text-ink/60">
+                    <span>Entrega</span>
+                    <span class="text-rust italic text-xs">Cortesia</span>
+                </div>
+            `;
+
+            summaryTotalDisplay.textContent = `R$ ${total.toFixed(2)}`;
+        }
+        
+        document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Obrigado! Seu pedido foi registrado (Demonstração).');
+            localStorage.setItem('cart', '[]');
+            updateCartCount();
+            window.location.href = 'index.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', renderOrderSummary);
+    </script>
+</body>
+</html>

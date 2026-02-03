@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado - La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paper': '#F7F5F0',
+                        'ink': '#1A1A1A',
+                        'rust': '#8F4F3B',
+                        'pine': '#2F3E35'
+                    },
+                    fontFamily: {
+                        'serif': ['"Cormorant Garamond"', 'serif'],
+                        'sans': ['"Montserrat"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-paper text-ink font-sans">
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-12 rounded-2xl shadow-2xl max-w-2xl text-center border border-ink/5">
+            <!-- Ícone de Sucesso -->
+            <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce-in">
+                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+
+            <!-- Mensagem -->
+            <h1 class="text-5xl font-serif italic mb-4 text-ink">Pagamento Aprovado!</h1>
+            <p class="text-lg text-ink/60 font-sans mb-8 leading-relaxed">
+                Seu pedido foi confirmado com sucesso. <br>
+                Em breve você receberá um email com todos os detalhes da entrega.
+            </p>
+
+            <!-- Informações do Pedido -->
+            <div class="bg-paper rounded-xl p-6 mb-8 border border-ink/10">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <svg class="w-5 h-5 text-rust" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <h2 class="text-xl font-serif italic">Próximos Passos</h2>
+                </div>
+                <ul class="space-y-3 text-left max-w-md mx-auto">
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-rust/10 rounded-full flex items-center justify-center text-rust text-xs font-serif">1</span>
+                        <span class="text-sm text-ink/70 font-sans">Você receberá um email de confirmação com o número do pedido</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-rust/10 rounded-full flex items-center justify-center text-rust text-xs font-serif">2</span>
+                        <span class="text-sm text-ink/70 font-sans">Nossas flores serão preparadas com todo cuidado</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-rust/10 rounded-full flex items-center justify-center text-rust text-xs font-serif">3</span>
+                        <span class="text-sm text-ink/70 font-sans">Entrega expressa em até 2 horas na cidade do Rio</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="index.html" onclick="limparCarrinho()" class="bg-rust text-paper px-10 py-4 rounded-lg hover:bg-pine transition-all duration-300 font-sans text-xs uppercase tracking-widest shadow-lg">
+                    Voltar ao Início
+                </a>
+                <a href="index.html#produtos" class="border-2 border-ink/20 text-ink px-10 py-4 rounded-lg hover:bg-ink/5 transition-all duration-300 font-sans text-xs uppercase tracking-widest">
+                    Ver Mais Produtos
+                </a>
+            </div>
+
+            <!-- Contato -->
+            <div class="mt-12 pt-8 border-t border-ink/10">
+                <p class="text-sm text-ink/60 font-sans mb-3">Dúvidas? Entre em contato conosco:</p>
+                <div class="flex justify-center gap-6 text-sm">
+                    <a href="mailto:contato@lafloricultura.com" class="text-rust hover:underline font-sans">contato@lafloricultura.com</a>
+                    <span class="text-ink/30">|</span>
+                    <a href="tel:+5521999999999" class="text-rust hover:underline font-sans">(21) 99999-9999</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Limpar carrinho após compra bem-sucedida
+        function limparCarrinho() {
+            localStorage.removeItem('floricultura_cart');
+        }
+
+        // Capturar parâmetros da URL (payment_id, status, etc)
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('payment_id');
+        const status = urlParams.get('status');
+        
+        if (paymentId) {
+            console.log('Payment ID:', paymentId);
+            console.log('Status:', status);
+            
+            // Aqui você pode enviar para seu backend para confirmar o pagamento
+            // fetch('/api/confirm-payment', { ... })
+        }
+    </script>
+
+    <style>
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .animate-bounce-in {
+            animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+    </style>
+</body>
+</html>
