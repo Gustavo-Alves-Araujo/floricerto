@@ -470,7 +470,7 @@
 
             try {
                 // Chamar backend
-                const BACKEND_URL = 'http://localhost:3000'; // Mude para URL do seu backend em produção
+                const BACKEND_URL = 'https://backendflori.vercel.app';
                 console.log('🌐 Chamando backend:', `${BACKEND_URL}/api/pedidos/criar`);
                 
                 const response = await fetch(`${BACKEND_URL}/api/pedidos/criar`, {
