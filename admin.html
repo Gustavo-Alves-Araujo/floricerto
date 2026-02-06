@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'paper': '#F7F5F0',
+                        'ink': '#1A1A1A',
+                        'rust': '#8F4F3B',
+                        'pine': '#2F3E35'
+                    },
+                    fontFamily: {
+                        'serif': ['"Cormorant Garamond"', 'serif'],
+                        'sans': ['"Montserrat"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'noise': "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\" opacity=\"0.05\"/%3E%3C/svg%3E')",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-feature-settings: "pnum"; }
+        .stamp-border {
+            position: relative;
+            background: white;
+            box-shadow: 0 0 0 1px #e5e5e5;
+        }
+        .stamp-border::before {
+            content: '';
+            position: absolute;
+            top: -4px; right: -4px; bottom: -4px; left: -4px;
+            border: 1px solid #1A1A1A;
+            z-index: -1;
+        }
+        input {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(26, 26, 26, 0.2);
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            border-bottom-color: #8F4F3B;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-paper text-ink font-serif antialiased selection:bg-rust selection:text-white relative">
+    <div class="fixed inset-0 bg-noise pointer-events-none z-50 mix-blend-multiply"></div>
+
+    <!-- Modal de Produto -->
+    <div id="productModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-ink/10 p-6 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl italic">Adicionar Produto</h2>
+                <button onclick="closeProductModal()" class="text-ink/40 hover:text-ink text-3xl">&times;</button>
+            </div>
+            
+            <form onsubmit="saveProduct(event)" class="p-6 space-y-6">
+                <input type="hidden" id="productId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Nome do Produto *</label>
+                        <input type="text" id="productNome" required class="w-full py-2 font-sans">
+                    </div>
+                    
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Preço (R$) *</label>
+                        <input type="number" step="0.01" id="productPreco" required class="w-full py-2 font-sans">
+                    </div>
+                    
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Categoria *</label>
+                        <select id="productCategoria" required class="w-full py-2 font-sans border-b border-ink/20">
+                            <option value="">Selecione...</option>
+                            <option value="Elegante">Elegante</option>
+                            <option value="Romântico">Romântico</option>
+                            <option value="Orquídeas">Orquídeas</option>
+                            <option value="Alegre">Alegre</option>
+                            <option value="Durável">Durável</option>
+                            <option value="Minimalista">Minimalista</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Tipo *</label>
+                        <select id="productTipo" required class="w-full py-2 font-sans border-b border-ink/20">
+                            <option value="produto">Produto Normal</option>
+                            <option value="order_bump">Order Bump</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">URL da Imagem *</label>
+                    <input type="url" id="productImagem" required class="w-full py-2 font-sans">
+                </div>
+                
+                <div>
+                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Descrição</label>
+                    <textarea id="productDescricao" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Destaques</label>
+                        <textarea id="productDestaques" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Ocasião</label>
+                        <textarea id="productOcasiao" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Entrega</label>
+                    <input type="text" id="productEntrega" class="w-full py-2 font-sans">
+                </div>
+                
+                <div>
+                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Palavras-chave</label>
+                    <input type="text" id="productPalavrasChave" class="w-full py-2 font-sans" placeholder="Separadas por vírgula">
+                </div>
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-rust text-paper py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-pine transition-colors duration-300">
+                        Salvar Produto
+                    </button>
+                    <button type="button" onclick="closeProductModal()" class="flex-1 border border-ink/20 text-ink py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-ink/5 transition-colors duration-300">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 bg-paper/90 backdrop-blur-sm z-40 border-b border-ink/5">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-normal tracking-tight italic hover:text-rust transition-colors duration-300">
+                La Floricultura
+            </a>
+            
+             <div class="flex items-center gap-8 font-sans text-xs tracking-widest uppercase">
+                <a href="index.html" class="relative group overflow-hidden hidden md:block">
+                    <span class="group-hover:-translate-y-full inline-block transition-transform duration-300">Início</span>
+                    <span class="absolute top-full left-0 group-hover:-translate-y-full transition-transform duration-300 text-rust">Início</span>
+                </a>
+                <a href="carrinho.html" class="flex items-center gap-2 group">
+                    <span>Carrinho</span>
+                    <span class="cart-count bg-ink text-paper w-4 h-4 rounded-full flex items-center justify-center font-serif text-[10px] opacity-0 transition-opacity group-hover:opacity-100">0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Login Section -->
+    <section id="loginSection" class="container mx-auto px-6 py-32 min-h-[80vh] flex items-center justify-center">
+        <div class="w-full max-w-md p-12 stamp-border bg-white/50 backdrop-blur-sm">
+            <h1 class="text-3xl italic mb-8 text-center text-ink">Área Restrita</h1>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-8">
+                <div class="space-y-2">
+                    <label class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Senha de Acesso</label>
+                    <input 
+                        type="password" 
+                        id="adminPassword" 
+                        required 
+                        placeholder=""
+                        class="w-full py-2 font-sans text-lg text-center tracking-widest">
+                </div>
+                <div id="errorMsg" class="text-rust italic text-sm text-center hidden">Senha incorreta</div>
+                <button type="submit" class="w-full bg-ink text-paper py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300">
+                    Acessar Painel
+                </button>
+                <p class="text-center font-serif italic text-xs text-ink/40 mt-4">
+                    Acesso exclusivo para funcionários.
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <!-- Admin Panel -->
+    <section id="adminPanel" class="hidden container mx-auto px-6 pt-32 pb-16 min-h-screen">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-ink/10 pb-8">
+            <h1 class="text-5xl italic">Dashboard</h1>
+            <button onclick="logoutAdmin()" class="font-sans text-xs tracking-widest uppercase text-rust hover:text-ink transition-colors mt-4 md:mt-0">
+                Sair do Sistema
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
+            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Inventário</p>
+                <p class="text-4xl italic text-ink" id="totalProducts">0</p>
+            </div>
+
+            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Categorias</p>
+                <p class="text-4xl italic text-ink" id="totalCategories">0</p>
+            </div>
+
+            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Valor Médio</p>
+                <p class="text-3xl italic text-rust" id="avgPrice">R$ 0</p>
+            </div>
+
+            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Item Principal</p>
+                <p class="text-3xl italic text-rust" id="maxPrice">R$ 0</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-4 mb-8 border-b border-ink/10">
+            <button onclick="showTab('produtos')" id="tab-produtos" class="pb-4 px-6 font-sans text-sm tracking-widest uppercase border-b-2 border-rust">
+                Produtos
+            </button>
+            <button onclick="showTab('pedidos')" id="tab-pedidos" class="pb-4 px-6 font-sans text-sm tracking-widest uppercase border-b-2 border-transparent hover:border-ink/20">
+                Pedidos
+            </button>
+        </div>
+
+        <!-- Products List -->
+        <div id="section-produtos">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl italic">Catálogo Vigente</h2>
+                <button onclick="openAddProductModal()" class="bg-rust text-paper px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-pine transition-colors duration-300 rounded-lg shadow-md hover:shadow-xl">
+                    + Adicionar Produto
+                </button>
+            </div>
+            <div id="adminProductsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Produtos serão carregados via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="section-pedidos" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl italic">Pedidos Recentes</h2>
+                <button onclick="loadPedidos()" class="bg-pine text-paper px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300 rounded-lg">
+                    🔄 Atualizar
+                </button>
+            </div>
+            
+            <!-- Filter -->
+            <div class="mb-6 flex gap-4">
+                <button onclick="filterPedidos('todos')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Todos</button>
+                <button onclick="filterPedidos('pendente')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Pendentes</button>
+                <button onclick="filterPedidos('aprovado')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Aprovados</button>
+                <button onclick="filterPedidos('saiu_entrega')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Em Entrega</button>
+                <button onclick="filterPedidos('entregue')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Entregues</button>
+            </div>
+
+            <div id="pedidosList" class="space-y-4">
+                <p class="text-center text-ink/40 py-8">Carregando pedidos...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#EBE8E0] pt-20 pb-10 border-t-4 border-double border-ink/10 mt-auto">
+        <div class="container mx-auto px-6">
+            <div class="border-t border-ink/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-sans text-ink/40 uppercase tracking-wider">
+                <p>&copy; 2026 La Floricultura. Rio de Janeiro.</p>
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-rust transition-colors">Sistema Interno v2.0</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        console.log('🔄 Inicializando Supabase...');
+        
+        // Configuração inline
+        const SUPABASE_URL = 'https://nrgwldtmucptrhoyqted.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yZ3dsZHRtdWNwdHJob3lxdGVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNTkxMjAsImV4cCI6MjA4NTkzNTEyMH0.8PLX18bXir94kCS5epFEyFGGEHxwKC3YANvwLE1SjmI';
+        
+        if (!window.supabase) {
+            alert('ERRO: Supabase SDK não carregou!');
+            throw new Error('Supabase SDK não disponível');
+        }
+        
+        // Criar cliente
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ Cliente Supabase criado');
+        
+        // Funções do banco
+        window.supabaseDB = {
+            async getAllProducts() {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .order('id', { ascending: true });
+                if (error) throw error;
+                // Retornar todos (admin vê tudo)
+                return data || [];
+            },
+            
+            async getOrderBumps() {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .eq('tipo', 'order_bump')
+                    .order('id', { ascending: true });
+                if (error) throw error;
+                return data || [];
+            },
+            
+            async getProductById(id) {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                if (error) throw error;
+                return data;
+            },
+            
+            async createProduct(produto) {
+                console.log('➕ Criando produto:', produto);
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .insert([produto])
+                    .select()
+                    .single();
+                if (error) {
+                    console.error('❌ Erro ao criar:', error);
+                    throw error;
+                }
+                console.log('✅ Produto criado:', data);
+                return data;
+            },
+            
+            async updateProduct(id, produto) {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .update(produto)
+                    .eq('id', id)
+                    .select()
+                    .single();
+                if (error) throw error;
+                return data;
+            },
+            
+            async deleteProduct(id) {
+                const { error } = await supabaseClient
+                    .from('produtos')
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
+                return true;
+            },
+
+            // Pedidos
+            async getAllPedidos() {
+                const { data, error} = await supabaseClient
+                    .from('pedidos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                return data || [];
+            },
+
+            async updatePedidoStatus(id, status_entrega) {
+                const { data, error } = await supabaseClient
+                    .from('pedidos')
+                    .update({ status_entrega, updated_at: new Date().toISOString() })
+                    .eq('id', id)
+                    .select()
+                    .single();
+                if (error) throw error;
+                return data;
+            }
+        };
+        
+        console.log('✅ supabaseDB inicializado:', window.supabaseDB);
+
+        // Funções de Tabs
+        window.showTab = function(tab) {
+            // Esconder todas as seções
+            document.getElementById('section-produtos').classList.add('hidden');
+            document.getElementById('section-pedidos').classList.add('hidden');
+            
+            // Resetar bordas
+            document.getElementById('tab-produtos').classList.remove('border-rust');
+            document.getElementById('tab-produtos').classList.add('border-transparent');
+            document.getElementById('tab-pedidos').classList.remove('border-rust');
+            document.getElementById('tab-pedidos').classList.add('border-transparent');
+            
+            // Mostrar seção ativa
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('border-rust');
+            document.getElementById(`tab-${tab}`).classList.remove('border-transparent');
+            
+            // Carregar dados
+            if (tab === 'pedidos') {
+                loadPedidos();
+            }
+        };
+
+        // Carregar Pedidos
+        let todosPedidos = [];
+        let filtroAtivo = 'todos';
+
+        window.loadPedidos = async function() {
+            const container = document.getElementById('pedidosList');
+            container.innerHTML = '<p class="text-center text-ink/40 py-8">⏳ Carregando...</p>';
+            
+            try {
+                todosPedidos = await window.supabaseDB.getAllPedidos();
+                console.log('Pedidos carregados:', todosPedidos.length);
+                renderPedidos();
+            } catch (error) {
+                console.error('Erro ao carregar pedidos:', error);
+                container.innerHTML = '<p class="text-center text-red-600 py-8">❌ Erro ao carregar pedidos</p>';
+            }
+        };
+
+        window.filterPedidos = function(filtro) {
+            filtroAtivo = filtro;
+            renderPedidos();
+        };
+
+        function renderPedidos() {
+            const container = document.getElementById('pedidosList');
+            
+            let pedidosFiltrados = todosPedidos;
+            if (filtroAtivo !== 'todos') {
+                pedidosFiltrados = todosPedidos.filter(p => {
+                    if (filtroAtivo === 'pendente') return p.status_pagamento === 'pendente';
+                    if (filtroAtivo === 'aprovado') return p.status_pagamento === 'aprovado' && p.status_entrega === 'pendente';
+                    return p.status_entrega === filtroAtivo;
+                });
+            }
+            
+            if (pedidosFiltrados.length === 0) {
+                container.innerHTML = '<p class="text-center text-ink/40 py-8">Nenhum pedido encontrado</p>';
+                return;
+            }
+            
+            container.innerHTML = pedidosFiltrados.map(pedido => {
+                const statusPag = pedido.status_pagamento === 'aprovado' ? '✅' : pedido.status_pagamento === 'rejeitado' ? '❌' : '⏳';
+                const statusEntrega = {
+                    'pendente': '📦 Pendente',
+                    'separando': '📋 Separando',
+                    'saiu_entrega': '🚚 Em Entrega',
+                    'entregue': '✅ Entregue',
+                    'cancelado': '❌ Cancelado'
+                };
+                
+                const dataEntrega = new Date(pedido.data_entrega).toLocaleDateString('pt-BR');
+                const dataPedido = new Date(pedido.created_at).toLocaleString('pt-BR');
+                
+                return `
+                    <div class="bg-white border border-ink/10 p-6 rounded-lg">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-serif text-xl font-bold">${pedido.numero_pedido}</h3>
+                                <p class="text-sm text-ink/60">${dataPedido}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-rust">R$ ${pedido.valor_total.toFixed(2)}</p>
+                                <p class="text-sm">${statusPag} ${pedido.status_pagamento}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                            <div>
+                                <p class="font-semibold">Cliente:</p>
+                                <p>${pedido.nome_cliente}</p>
+                                <p class="text-ink/60">${pedido.telefone}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Entrega:</p>
+                                <p>${dataEntrega} - ${pedido.horario_entrega}</p>
+                                <p class="text-ink/60">${pedido.cidade} - ${pedido.bairro}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <p class="font-semibold text-sm mb-2">Produtos:</p>
+                            <ul class="text-sm text-ink/80">
+                                ${JSON.parse(JSON.stringify(pedido.itens)).map(item => 
+                                    `<li>• ${item.nome} (${item.quantidade || 1}x R$ ${item.preco.toFixed(2)})</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="flex gap-2 items-center">
+                            <label class="text-sm font-semibold">Status:</label>
+                            <select onchange="atualizarStatusPedido(${pedido.id}, this.value)" 
+                                    class="flex-1 py-2 px-3 border border-ink/20 rounded text-sm"
+                                    ${pedido.status_pagamento !== 'aprovado' ? 'disabled' : ''}>
+                                <option value="pendente" ${pedido.status_entrega === 'pendente' ? 'selected' : ''}>📦 Pendente</option>
+                                <option value="separando" ${pedido.status_entrega === 'separando' ? 'selected' : ''}>📋 Separando</option>
+                                <option value="saiu_entrega" ${pedido.status_entrega === 'saiu_entrega' ? 'selected' : ''}>🚚 Em Entrega</option>
+                                <option value="entregue" ${pedido.status_entrega === 'entregue' ? 'selected' : ''}>✅ Entregue</option>
+                                <option value="cancelado" ${pedido.status_entrega === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.atualizarStatusPedido = async function(id, novoStatus) {
+            try {
+                await window.supabaseDB.updatePedidoStatus(id, novoStatus);
+                console.log(`Status do pedido ${id} atualizado para ${novoStatus}`);
+                await loadPedidos(); // Recarregar
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                alert('Erro ao atualizar status do pedido');
+            }
+        };
+    </script>
+    <script src="js/cart.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

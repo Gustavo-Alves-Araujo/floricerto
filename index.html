@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bege': '#E8E3D8',
+                        'bege-dark': '#D4CEC0',
+                        'text-dark': '#2D2D2D',
+                        'text-light': '#707070'
+                    },
+                    fontFamily: {
+                        'serif': ['"Crimson Text"', 'serif'],
+                        'sans': ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-feature-settings: "pnum";
+            scroll-behavior: smooth;
+        }
+        
+        .wavy-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8F4F3B, transparent);
+            opacity: 0.3;
+        }
+        
+        /* Efeito de revelar imagem suavemente */
+        .reveal-img {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-img.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Animação suave para o hero */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-bege text-text-dark font-serif antialiased">
+
+    <!-- Header Simplificado -->
+    <header class="fixed w-full top-0 bg-bege/98 backdrop-blur-sm z-40 border-b border-text-dark/10 shadow-sm">
+        <nav class="container mx-auto px-6 py-5 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-normal tracking-tight text-text-dark hover:text-text-dark/60 transition-colors duration-300">
+                La Floricultura
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <a href="#produtos" class="hidden md:block font-sans text-sm text-text-dark hover:text-text-dark/60 transition-colors">
+                    Produtos
+                </a>
+                <a href="admin.html" class="hidden md:block font-sans text-sm text-text-dark hover:text-text-dark/60 transition-colors">
+                    Admin
+                </a>
+                <a href="carrinho.html" class="flex items-center gap-3 bg-text-dark text-bege px-6 py-3 rounded-full hover:bg-text-dark/90 transition-all shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span class="font-sans text-sm font-medium">Carrinho</span>
+                    <span class="cart-count bg-bege text-text-dark w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Simples - Apenas Título -->
+    <section class="pt-32 pb-16 px-6">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-text-dark">
+                LA FLORICULTURA
+            </h1>
+        </div>
+    </section>
+
+    <!-- Banner Grande com Logo -->
+    <section class="px-6 pb-20">
+        <div class="container mx-auto">
+            <div class="w-full bg-white rounded-3xl shadow-2xl overflow-hidden aspect-[21/9]">
+                <img src="img/LOGO - SITE.png" alt="La Floricultura" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </section>
+
+    <!-- Lista de Produtos -->
+    <section id="produtos" class="py-12 px-6 container mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-ink/10 pb-8">
+            <div>
+                <span class="font-sans text-[10px] tracking-[0.2em] uppercase text-rust block mb-2">Catálogo Completo</span>
+                <h2 class="text-4xl md:text-5xl italic">Nossa Coleção</h2>
+            </div>
+            <p class="text-right text-sm text-ink/60 font-sans mt-4 md:mt-0 max-w-xs">
+                Cada peça é uma composição única, pensada para celebrar momentos especiais com elegância atemporal.
+            </p>
+        </div>
+
+        <!-- Barra de Pesquisa e Filtros -->
+        <div class="mb-16 space-y-8">
+            <!-- Pesquisa -->
+            <div class="relative max-w-2xl mx-auto">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Buscar por nome ou categoria..." 
+                    class="w-full px-6 py-4 pr-12 border-2 border-text-dark/10 rounded-full focus:border-text-dark/30 focus:outline-none transition-all font-sans text-sm bg-white shadow-sm"
+                    onkeyup="filterProducts()">
+                <svg class="w-5 h-5 absolute right-6 top-1/2 -translate-y-1/2 text-text-light pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+
+            <!-- Filtros -->
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="filterByCategory('todos')" class="filter-btn active px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark hover:bg-text-dark hover:text-bege transition-all bg-text-dark text-bege" data-category="todos">
+                    Todos
+                </button>
+                <button onclick="filterByCategory('Romântico')" class="filter-btn px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark/20 hover:bg-text-dark hover:text-bege hover:border-text-dark transition-all bg-white" data-category="Romântico">
+                    Romântico
+                </button>
+                <button onclick="filterByCategory('Tropical')" class="filter-btn px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark/20 hover:bg-text-dark hover:text-bege hover:border-text-dark transition-all bg-white" data-category="Tropical">
+                    Tropical
+                </button>
+                <button onclick="filterByCategory('Delicado')" class="filter-btn px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark/20 hover:bg-text-dark hover:text-bege hover:border-text-dark transition-all bg-white" data-category="Delicado">
+                    Delicado
+                </button>
+                <button onclick="filterByCategory('Clássico')" class="filter-btn px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark/20 hover:bg-text-dark hover:text-bege hover:border-text-dark transition-all bg-white" data-category="Clássico">
+                    Clássico
+                </button>
+                <button onclick="filterByCategory('Moderno')" class="filter-btn px-8 py-3 rounded-full font-sans text-sm border-2 border-text-dark/20 hover:bg-text-dark hover:text-bege hover:border-text-dark transition-all bg-white" data-category="Moderno">
+                    Moderno
+                </button>
+            </div>
+
+            <!-- Contador de Resultados -->
+            <p id="resultsCount" class="text-center text-sm font-sans text-text-light"></p>
+        </div>
+
+        <div id="productsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+            <!-- Renderizado via JS -->
+        </div>
+
+        <!-- Mensagem quando não há resultados -->
+        <div id="noResults" class="hidden text-center py-20">
+            <svg class="w-16 h-16 mx-auto mb-4 text-ink/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-xl font-serif italic text-ink/40 mb-2">Nenhum produto encontrado</p>
+            <p class="text-sm font-sans text-ink/30">Tente ajustar sua busca ou filtros</p>
+        </div>
+    </section>
+
+    <!-- Footer Simples -->
+    <footer class="bg-text-dark pt-16 pb-10 border-t border-text-dark mt-32">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <div>
+                    <h3 class="text-2xl font-light mb-4 text-bege">La Floricultura</h3>
+                    <p class="font-sans text-sm text-bege/60">
+                        Design botânico desde 2026.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-sans text-xs tracking-widest uppercase mb-4 text-bege/60">Navegação</h4>
+                    <ul class="space-y-2 font-sans text-sm text-bege/80">
+                        <li><a href="index.html" class="hover:text-bege transition-colors">Início</a></li>
+                        <li><a href="#produtos" class="hover:text-bege transition-colors">Produtos</a></li>
+                        <li><a href="carrinho.html" class="hover:text-bege transition-colors">Carrinho</a></li>
+                        <li><a href="admin.html" class="hover:text-bege transition-colors">Admin</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-sans text-xs tracking-widest uppercase mb-4 text-bege/60">Contato</h4>
+                    <ul class="space-y-2 font-sans text-sm text-bege/80">
+                        <li>contato@lafloricultura.com</li>
+                        <li>(21) 99999-9999</li>
+                        <li class="pt-2 text-xs">Seg — Sáb: 9h às 19h</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-bege/10 pt-6 text-center text-xs font-sans text-bege/40 uppercase tracking-wider">
+                <p>&copy; 2026 La Floricultura. Rio de Janeiro.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inicializar Supabase
+        const supabaseClient = window.supabase.createClient(
+            'https://nrgwldtmucptrhoyqted.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yZ3dsZHRtdWNwdHJob3lxdGVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNTkxMjAsImV4cCI6MjA4NTkzNTEyMH0.8PLX18bXir94kCS5epFEyFGGEHxwKC3YANvwLE1SjmI'
+        );
+        
+        window.supabaseDB = {
+            getAllProducts: async () => {
+                console.log('🔍 Chamando SELECT * FROM produtos...');
+                const { data, error } = await supabaseClient.from('produtos').select('*').order('id');
+                console.log('   Raw data:', data);
+                console.log('   Error:', error);
+                if (error) {
+                    console.error('❌ Erro na query:', error);
+                    throw error;
+                }
+                console.log('   Retornando:', (data || []).length, 'produtos');
+                return data || [];
+            },
+            getOrderBumps: async () => {
+                const { data, error } = await supabaseClient.from('produtos').select('*').eq('tipo', 'order_bump').order('id');
+                if (error) throw error;
+                return data || [];
+            }
+        };
+    </script>
+    <script src="js/produtos.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        let currentFilter = 'todos';
+        let searchTerm = '';
+
+        // Renderizar produtos com o novo layout padronizado
+        async function renderProducts() {
+            // Aguardar carregamento dos produtos
+            if (!produtos || produtos.length === 0) {
+                await loadProdutos();
+            }
+            
+            const container = document.getElementById('productsList');
+            const noResults = document.getElementById('noResults');
+            
+            // Filtrar produtos
+            let filteredProducts = produtos;
+            
+            // Filtro por categoria
+            if (currentFilter !== 'todos') {
+                filteredProducts = filteredProducts.filter(p => p.categoria === currentFilter);
+            }
+            
+            // Filtro por busca
+            if (searchTerm) {
+                filteredProducts = filteredProducts.filter(p => 
+                    p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    p.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    p.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (p.ocasiao && p.ocasiao.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (p.palavrasChave && p.palavrasChave.some(k => k.toLowerCase().includes(searchTerm.toLowerCase())))
+                );
+            }
+            
+            // Atualizar contador
+            const resultsCount = document.getElementById('resultsCount');
+            resultsCount.textContent = `${filteredProducts.length} ${filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}`;
+            
+            // Mostrar/ocultar mensagem de sem resultados
+            if (filteredProducts.length === 0) {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            } else {
+                noResults.classList.add('hidden');
+            }
+            
+            container.innerHTML = filteredProducts.map((produto, index) => `
+                <a href="produto.html?id=${produto.id}" class="group block" style="transition-delay: ${index * 50}ms">
+                    <div class="relative overflow-hidden mb-4 aspect-[3/4] bg-white rounded-2xl shadow-md group-hover:shadow-2xl transition-all duration-500">
+                        <img src="${produto.imagem}" alt="${produto.nome}" class="w-full h-full object-cover transition-all duration-700 ease-out transform group-hover:scale-105">
+                    </div>
+                    
+                    <div class="text-center space-y-2">
+                        <h3 class="font-serif text-xl text-text-dark group-hover:text-text-dark/60 transition-colors">${produto.nome}</h3>
+                        <p class="font-sans text-2xl font-light text-text-dark">R$ ${produto.preco.toFixed(2)}</p>
+                    </div>
+                </a>
+            `).join('');
+
+            // Intersection Observer para animações de entrada
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal-img').forEach(el => observer.observe(el));
+        }
+
+        // Filtrar por categoria
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            // Atualizar botões ativos
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-text-dark', 'text-bege', 'border-text-dark');
+                btn.classList.add('bg-white', 'border-text-dark/20');
+            });
+            
+            const activeBtn = document.querySelector(`[data-category="${category}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-text-dark', 'text-bege', 'border-text-dark');
+                activeBtn.classList.remove('bg-white', 'border-text-dark/20');
+            }
+            
+            renderProducts();
+        }
+
+        // Filtrar por busca
+        function filterProducts() {
+            searchTerm = document.getElementById('searchInput').value;
+            renderProducts();
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProdutos();
+            renderProducts();
+        });
+    </script>
+</body>
+</html>

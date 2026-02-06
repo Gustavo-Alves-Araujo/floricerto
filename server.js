@@ -31,6 +31,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Servir arquivos estáticos da raiz
+app.use(express.static('.'))
+
 // ============================================
 // ROTAS
 // ============================================
@@ -275,27 +278,33 @@ app.use((error, req, res, next) => {
 // INICIAR SERVIDOR
 // ============================================
 
-app.listen(PORT, () => {
-  console.log('');
-  console.log('🌸 ================================');
-  console.log('🌸 La Floricultura - API Backend');
-  console.log('🌸 ================================');
-  console.log('');
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
-  console.log('');
-  console.log('📝 Variáveis de ambiente configuradas:');
-  console.log(`   - MERCADOPAGO_ACCESS_TOKEN: ${process.env.MERCADOPAGO_ACCESS_TOKEN ? '✅ Configurado' : '❌ Não configurado'}`);
-  console.log(`   - FRONTEND_URL: ${process.env.FRONTEND_URL || 'Não configurado'}`);
-  console.log(`   - BACKEND_URL: ${process.env.BACKEND_URL || 'Não configurado'}`);
-  console.log('');
-  console.log('⚠️  Lembre-se de configurar o .env antes de usar!');
-  console.log('');
-});
+// Para desenvolvimento local
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('🌸 ================================');
+    console.log('🌸 La Floricultura - API Backend');
+    console.log('🌸 ================================');
+    console.log('');
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🔗 API Base: http://localhost:${PORT}/api`);
+    console.log('');
+    console.log('📝 Variáveis de ambiente configuradas:');
+    console.log(`   - MERCADOPAGO_ACCESS_TOKEN: ${process.env.MERCADOPAGO_ACCESS_TOKEN ? '✅ Configurado' : '❌ Não configurado'}`);
+    console.log(`   - FRONTEND_URL: ${process.env.FRONTEND_URL || 'Não configurado'}`);
+    console.log(`   - BACKEND_URL: ${process.env.BACKEND_URL || 'Não configurado'}`);
+    console.log('');
+    console.log('⚠️  Lembre-se de configurar o .env antes de usar!');
+    console.log('');
+  });
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('👋 Encerrando servidor...');
   process.exit(0);
 });
+
+// Exportar para Vercel (serverless)
+module.exports = app;

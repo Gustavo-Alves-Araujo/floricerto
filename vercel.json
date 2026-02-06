@@ -3,38 +3,48 @@
   "public": true,
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/",
-      "destination": "/html/index.html"
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
     },
     {
-      "source": "/admin",
-      "destination": "/html/admin.html"
+      "src": "/",
+      "dest": "/html/index.html"
     },
     {
-      "source": "/carrinho",
-      "destination": "/html/carrinho.html"
+      "src": "/admin",
+      "dest": "/html/admin.html"
     },
     {
-      "source": "/produto/:id",
-      "destination": "/html/produto.html"
+      "src": "/carrinho",
+      "dest": "/html/carrinho.html"
     },
     {
-      "source": "/checkout",
-      "destination": "/html/checkout.html"
+      "src": "/produto/(.*)",
+      "dest": "/html/produto.html"
     },
     {
-      "source": "/success",
-      "destination": "/html/success.html"
+      "src": "/checkout",
+      "dest": "/html/checkout.html"
     },
     {
-      "source": "/failure",
-      "destination": "/html/failure.html"
+      "src": "/success",
+      "dest": "/html/success.html"
     },
     {
-      "source": "/pending",
-      "destination": "/html/pending.html"
+      "src": "/failure",
+      "dest": "/html/failure.html"
+    },
+    {
+      "src": "/pending",
+      "dest": "/html/pending.html"
     }
   ],
   "headers": [
