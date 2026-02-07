@@ -783,6 +783,10 @@
                                     class="flex-1 bg-gray-100 text-gray-700 py-2 text-xs font-medium hover:bg-gray-200 transition-colors rounded">
                                 Cartão
                             </button>
+                            <button onclick="event.stopPropagation(); gerarResumo(${pedido.id})" 
+                                    class="flex-1 bg-blue-100 text-blue-700 py-2 text-xs font-medium hover:bg-blue-200 transition-colors rounded">
+                                Resumo
+                            </button>
                             <button onclick="event.stopPropagation(); abrirModalPedido(${pedido.id})" 
                                     class="flex-1 bg-gray-800 text-white py-2 text-xs font-medium hover:bg-gray-900 transition-colors rounded">
                                 Detalhes
@@ -827,6 +831,351 @@
             }
         };
         
+        window.gerarResumo = function(pedidoId) {
+            const pedido = todosPedidos.find(p => p.id === pedidoId);
+            if (!pedido) {
+                alert('Pedido não encontrado');
+                return;
+            }
+            
+            const itens = Array.isArray(pedido.itens) ? pedido.itens : JSON.parse(pedido.itens || '[]');
+            const nomeRecebedor = pedido.nome_recebedor || pedido.nome_cliente;
+            const enderecoCompleto = `${pedido.rua}, ${pedido.numero}${pedido.complemento ? ' - ' + pedido.complemento : ''}, ${pedido.bairro}, ${pedido.cidade} - ${pedido.estado}, CEP: ${pedido.cep}`;
+            const valorFrete = pedido.valor_frete || 0;
+            const subtotal = (pedido.valor_total || 0) - valorFrete;
+            
+            const resumoHTML = `
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .no-print-totais {
+                display: none !important;
+            }
+            .assinatura-area {
+                border: 1px solid #000 !important;
+            }
+            #resumo-container {
+                width: 100% !important;
+                max-width: 190mm !important;
+                min-height: auto !important;
+                height: auto !important;
+                padding: 10mm !important;
+                margin: 0 !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                overflow: visible !important;
+            }
+            * {
+                page-break-inside: avoid !important;
+            }
+        }
+        
+        * {
+            font-family: 'Lato', sans-serif;
+        }
+        
+        #resumo-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            background: white;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        
+        .resumo-topo {
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .resumo-topo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            font-size: 14px;
+        }
+        
+        .info-item strong {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .produtos-lista {
+            margin: 20px 0;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        
+        .produto-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .produto-item:last-child {
+            border-bottom: none;
+        }
+        
+        .total-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+        }
+        
+        .total-linha {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .total-final {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+        
+        .comanda-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 3px dashed #333;
+        }
+        
+        .comanda-titulo {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .comanda-info {
+            margin-bottom: 20px;
+        }
+        
+        .comanda-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .assinatura-area {
+            border: 2px dashed #999;
+            height: 80px;
+            margin-top: 20px;
+            position: relative;
+            background: #f9f9f9;
+        }
+        
+        .assinatura-label {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .no-print {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .no-print button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn-imprimir {
+            background: #2c2c2c;
+            color: white;
+        }
+        
+        .btn-fechar {
+            background: #eee;
+            color: #333;
+        }
+    </style>
+    
+    <div id="resumo-container">
+        <!-- Resumo da Compra -->
+        <div class="resumo-topo">
+            <h1>RESUMO DO PEDIDO</h1>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Número do Pedido</strong>
+                    ${pedido.numero_pedido}
+                </div>
+                <div class="info-item">
+                    <strong>Data do Pedido</strong>
+                    ${new Date(pedido.created_at).toLocaleDateString('pt-BR')}
+                </div>
+                <div class="info-item">
+                    <strong>Cliente</strong>
+                    ${pedido.nome_cliente}
+                </div>
+                <div class="info-item">
+                    <strong>Telefone</strong>
+                    ${pedido.telefone}
+                </div>
+            </div>
+            
+            <div class="info-item" style="margin-top: 15px;">
+                <strong>Endereço de Entrega</strong>
+                ${enderecoCompleto}
+            </div>
+            
+            <div class="info-item" style="margin-top: 10px;">
+                <strong>Destinatária</strong>
+                ${nomeRecebedor}
+            </div>
+            
+            ${pedido.data_entrega ? `
+            <div class="info-item" style="margin-top: 10px;">
+                <strong>Data de Entrega</strong>
+                ${new Date(pedido.data_entrega).toLocaleDateString('pt-BR')}
+            </div>
+            ` : ''}
+        </div>
+        
+        <!-- Produtos -->
+        <div class="produtos-lista">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px;">PRODUTOS</h3>
+            ${itens.map(item => `
+                <div class="produto-item">
+                    <div>
+                        <strong>${item.nome}</strong>
+                        ${item.quantidade > 1 ? `<span style="color: #666; font-size: 12px;"> x${item.quantidade}</span>` : ''}
+                    </div>
+                    <div style="font-weight: 600;">R$ ${(parseFloat(item.preco) * (item.quantidade || 1)).toFixed(2)}</div>
+                </div>
+            `).join('')}
+        </div>
+        
+        <!-- Totais (oculto na impressão) -->
+        <div class="total-section no-print-totais">
+            <div class="total-linha">
+                <span>Subtotal:</span>
+                <span>R$ ${subtotal.toFixed(2)}</span>
+            </div>
+            ${valorFrete > 0 ? `
+            <div class="total-linha">
+                <span>Frete:</span>
+                <span>R$ ${valorFrete.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            <div class="total-linha total-final">
+                <span>TOTAL:</span>
+                <span>R$ ${pedido.valor_total.toFixed(2)}</span>
+            </div>
+        </div>
+        
+        <!-- Comanda para Entregador -->
+        <div class="comanda-section">
+            <div class="comanda-titulo">Comanda de Entrega</div>
+            
+            <div class="comanda-info">
+                <p><strong>Pedido:</strong> ${pedido.numero_pedido}</p>
+                <p><strong>Destinatária:</strong> ${nomeRecebedor}</p>
+                <p><strong>Endereço:</strong> ${enderecoCompleto}</p>
+                <p><strong>Telefone:</strong> ${pedido.telefone}</p>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <strong style="font-size: 14px;">Produtos:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    ${itens.map(item => `<li>${item.nome}${item.quantidade > 1 ? ` (x${item.quantidade})` : ''}</li>`).join('')}
+                </ul>
+            </div>
+            
+            <div class="assinatura-area" id="assinaturaArea">
+                <canvas id="signatureCanvas" width="100%" height="100%" style="width: 100%; height: 100%; cursor: crosshair;"></canvas>
+                <div class="assinatura-label">Assinatura do Cliente</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="no-print">
+        <button class="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+        <button class="btn-fechar" onclick="this.closest('.fixed').remove()">Fechar</button>
+    </div>
+`;
+            
+            // Criar modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-auto';
+            modal.innerHTML = resumoHTML;
+            modal.onclick = (e) => {
+                if (e.target === modal || (e.target.classList && e.target.classList.contains('no-print'))) return;
+            };
+            document.body.appendChild(modal);
+            
+            // Carregar SignaturePad e inicializar após inserir no DOM
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/signature_pad@4.0.9/dist/signature_pad.umd.min.js';
+            script.onload = () => {
+                setTimeout(() => {
+                    const canvas = document.getElementById('signatureCanvas');
+                    if (canvas && typeof SignaturePad !== 'undefined') {
+                        const signaturePad = new SignaturePad(canvas, {
+                            backgroundColor: 'transparent',
+                            penColor: '#000'
+                        });
+                        
+                        // Ajustar tamanho do canvas
+                        function resizeCanvas() {
+                            const rect = canvas.getBoundingClientRect();
+                            canvas.width = rect.width;
+                            canvas.height = rect.height;
+                            signaturePad.clear();
+                        }
+                        resizeCanvas();
+                        window.addEventListener('resize', resizeCanvas);
+                    }
+                }, 100);
+            };
+            document.head.appendChild(script);
+        };
+        
         window.gerarCartao = function(pedidoId) {
             const pedido = todosPedidos.find(p => p.id === pedidoId);
             if (!pedido) {
@@ -862,9 +1211,14 @@
             #cartao-container {
                 width: 297mm !important;
                 height: 420mm !important;
-                page-break-after: avoid;
-                page-break-inside: avoid;
-                overflow: hidden;
+                max-height: 420mm !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                page-break-before: avoid !important;
+                overflow: hidden !important;
+            }
+            * {
+                page-break-inside: avoid !important;
             }
         }
 
@@ -971,7 +1325,8 @@
         }
 
         .nome-destaque {
-            font-family: 'Pinyon Script', cursive;
+            font-family: 'Lato', sans-serif;
+            font-weight: 400;
             font-size: 85pt; /* Tamanho A3 exige fonte gigante */
             color: #1a1a1a;
             line-height: 1.1;
@@ -999,11 +1354,12 @@
         }
 
         .texto-mensagem {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
             font-size: 28pt;
             line-height: 1.6;
             color: #333;
-            font-style: italic;
+            font-style: normal;
             white-space: pre-wrap;
         }
 

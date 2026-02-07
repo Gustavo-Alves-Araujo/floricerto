@@ -116,7 +116,7 @@ colors: {
 ## 📞 Contato
 
 Email: contato@lafloricultura.com  
-WhatsApp: (21) 99999-9999
+WhatsApp: (21) 99267-4996
 
 ---
 
