@@ -1086,28 +1086,12 @@
                         <strong>${item.nome}</strong>
                         ${item.quantidade > 1 ? `<span style="color: #666; font-size: 12px;"> x${item.quantidade}</span>` : ''}
                     </div>
-                    <div style="font-weight: 600;">R$ ${(parseFloat(item.preco) * (item.quantidade || 1)).toFixed(2)}</div>
                 </div>
             `).join('')}
         </div>
         
         <!-- Totais (oculto na impressão) -->
-        <div class="total-section no-print-totais">
-            <div class="total-linha">
-                <span>Subtotal:</span>
-                <span>R$ ${subtotal.toFixed(2)}</span>
-            </div>
-            ${valorFrete > 0 ? `
-            <div class="total-linha">
-                <span>Frete:</span>
-                <span>R$ ${valorFrete.toFixed(2)}</span>
-            </div>
-            ` : ''}
-            <div class="total-linha total-final">
-                <span>TOTAL:</span>
-                <span>R$ ${pedido.valor_total.toFixed(2)}</span>
-            </div>
-        </div>
+       
         
         <!-- Comanda para Entregador -->
         <div class="comanda-section">
