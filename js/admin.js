@@ -139,6 +139,7 @@ function openAddProductModal() {
   document.getElementById('productTipo').value = 'produto';
   document.getElementById('productImagem').value = '';
   document.getElementById('productDescricao').value = '';
+  document.getElementById('productSubtitulo').value = '';
   document.getElementById('productDestaques').value = '';
   document.getElementById('productOcasiao').value = '';
   document.getElementById('productEntrega').value = '';
@@ -162,6 +163,7 @@ async function editProduct(id) {
   document.getElementById('productTipo').value = produto.tipo || 'produto';
   document.getElementById('productImagem').value = produto.imagem;
   document.getElementById('productDescricao').value = produto.descricao || '';
+  document.getElementById('productSubtitulo').value = produto.subtitulo || '';
   document.getElementById('productDestaques').value = produto.destaques || '';
   document.getElementById('productOcasiao').value = produto.ocasiao || '';
   document.getElementById('productEntrega').value = produto.entrega || '';
@@ -186,7 +188,8 @@ async function saveProduct(event) {
     categoria: document.getElementById('productCategoria').value.trim(),
     tipo: document.getElementById('productTipo').value || 'produto', // Garantir que tenha valor padrão
     imagem: document.getElementById('productImagem').value.trim(),
-    descricao: (document.getElementById('productDescricao').value || '').trim() || null
+    descricao: (document.getElementById('productDescricao').value || '').trim() || null,
+    subtitulo: (document.getElementById('productSubtitulo').value || '').trim() || null
   };
   
   // Validações básicas

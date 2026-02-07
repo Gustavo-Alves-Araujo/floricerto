@@ -40,8 +40,10 @@ app.post('/api/pedidos/criar', async (req, res) => {
       cidade,
       estado,
       data_entrega,
-      horario_entrega,
+      tipo_entrega,
+      valor_frete,
       instrucoes_adicionais,
+      mensagem_cartao,
       itens, // Array com produtos do carrinho
       valor_total
     } = req.body;
@@ -51,53 +53,160 @@ app.post('/api/pedidos/criar', async (req, res) => {
       return res.status(400).json({ erro: 'Dados incompletos' });
     }
 
-    // Gerar número do pedido
-    const numero_pedido = `PED-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    // Gerar número do pedido sequencial
+    // Buscar todos os pedidos com formato PED-XXX para encontrar o maior número
+    const { data: todosPedidos, error: erroPedidos } = await supabase
+      .from('pedidos')
+      .select('numero_pedido')
+      .like('numero_pedido', 'PED-%');
+
+    let proximoNumero = 1;
+    
+    if (!erroPedidos && todosPedidos && todosPedidos.length > 0) {
+      // Extrair números de todos os pedidos no formato PED-XXX
+      const numeros = todosPedidos
+        .map(p => {
+          // Aceitar tanto PED-001 quanto PED-1001
+          const match = p.numero_pedido.match(/^PED-(\d+)$/);
+          return match ? parseInt(match[1]) : 0;
+        })
+        .filter(n => n > 0);
+      
+      if (numeros.length > 0) {
+        proximoNumero = Math.max(...numeros) + 1;
+      }
+    }
+    
+    // Formatar com zeros à esquerda: mínimo 3 dígitos, mas cresce naturalmente
+    // 001, 002, ..., 010, 011, ..., 100, 101, ..., 1000, 1001, ...
+    const numeroFormatado = proximoNumero < 1000 
+      ? proximoNumero.toString().padStart(3, '0')
+      : proximoNumero.toString();
+    
+    const numero_pedido = `PED-${numeroFormatado}`;
+    
+    console.log(`📦 Gerando número de pedido sequencial: ${numero_pedido}`);
 
     // 1. Salvar pedido no Supabase
-    const { data: pedidoData, error: pedidoError } = await supabase
+    // Preparar objeto de dados base (campos obrigatórios que sempre existem)
+    const pedidoDataToInsert = {
+      numero_pedido,
+      nome_cliente,
+      telefone,
+      cpf,
+      nome_recebedor,
+      cep,
+      rua,
+      numero,
+      complemento: complemento || null,
+      bairro,
+      cidade,
+      estado,
+      data_entrega,
+      horario_entrega: tipo_entrega || 'comercial', // Usar tipo_entrega como horario_entrega para compatibilidade
+      instrucoes_adicionais: instrucoes_adicionais || null,
+      itens: itens,
+      valor_total: parseFloat(valor_total),
+      status_pagamento: 'pendente',
+      status_entrega: 'pendente'
+    };
+
+    // Adicionar campos novos se existirem
+    if (tipo_entrega) {
+      pedidoDataToInsert.tipo_entrega = tipo_entrega;
+    }
+    if (valor_frete !== undefined && valor_frete !== null) {
+      pedidoDataToInsert.valor_frete = parseFloat(valor_frete);
+    }
+    if (mensagem_cartao) {
+      pedidoDataToInsert.mensagem_cartao = mensagem_cartao;
+    }
+
+    let pedidoData;
+    
+    // Tentar inserir com campos novos primeiro
+    const { data: pedidoDataInsert, error: pedidoError } = await supabase
       .from('pedidos')
-      .insert([{
-        numero_pedido,
-        nome_cliente,
-        telefone,
-        cpf,
-        nome_recebedor,
-        cep,
-        rua,
-        numero,
-        complemento: complemento || null,
-        bairro,
-        cidade,
-        estado,
-        data_entrega,
-        horario_entrega,
-        instrucoes_adicionais: instrucoes_adicionais || null,
-        itens: itens,
-        valor_total: parseFloat(valor_total),
-        status_pagamento: 'pendente',
-        status_entrega: 'pendente'
-      }])
+      .insert([pedidoDataToInsert])
       .select()
       .single();
 
     if (pedidoError) {
-      console.error('Erro ao salvar pedido:', pedidoError);
-      return res.status(500).json({ erro: 'Erro ao salvar pedido' });
+      // Se o erro for de coluna não encontrada, tentar sem os campos novos
+      if (pedidoError.message && (pedidoError.message.includes('column') || pedidoError.message.includes('does not exist'))) {
+        console.log('⚠️ Campos novos não existem na tabela, tentando sem eles...');
+        
+        // Remover campos novos e tentar novamente
+        const pedidoDataToInsertRetry = { ...pedidoDataToInsert };
+        delete pedidoDataToInsertRetry.tipo_entrega;
+        delete pedidoDataToInsertRetry.valor_frete;
+        delete pedidoDataToInsertRetry.mensagem_cartao;
+        
+        const { data: pedidoDataRetry, error: pedidoErrorRetry } = await supabase
+          .from('pedidos')
+          .insert([pedidoDataToInsertRetry])
+          .select()
+          .single();
+
+        if (pedidoErrorRetry) {
+          console.error('Erro ao salvar pedido (retry):', pedidoErrorRetry);
+          return res.status(500).json({ 
+            erro: 'Erro ao salvar pedido',
+            detalhes: pedidoErrorRetry.message || 'Erro desconhecido'
+          });
+        }
+        
+        pedidoData = pedidoDataRetry;
+      } else {
+        console.error('Erro ao salvar pedido:', pedidoError);
+        console.error('Detalhes do erro:', JSON.stringify(pedidoError, null, 2));
+        return res.status(500).json({ 
+          erro: 'Erro ao salvar pedido',
+          detalhes: pedidoError.message || 'Erro desconhecido',
+          code: pedidoError.code
+        });
+      }
+    } else {
+      pedidoData = pedidoDataInsert;
     }
 
     // 2. Criar preferência de pagamento no Mercado Pago
+    // Preparar itens do carrinho
+    const mpItems = itens.map(item => ({
+      title: item.nome,
+      unit_price: parseFloat(item.preco),
+      quantity: item.quantidade || 1
+    }));
+
+    // Adicionar frete como item separado se houver valor
+    const valorFreteNum = valor_frete ? parseFloat(valor_frete) : 0;
+    if (valorFreteNum > 0) {
+      const tiposEntrega = {
+        'comercial': 'Período Comercial',
+        'manha': 'Período Manhã',
+        'tarde': 'Período Tarde',
+        'expressa': 'Entrega Expressa'
+      };
+      
+      mpItems.push({
+        title: `Entrega - ${tiposEntrega[tipo_entrega] || 'Entrega'}`,
+        unit_price: valorFreteNum,
+        quantity: 1
+      });
+    }
+
     const preference = {
-      items: itens.map(item => ({
-        title: item.nome,
-        unit_price: parseFloat(item.preco),
-        quantity: item.quantidade || 1
-      })),
+      items: mpItems,
       payer: {
         name: nome_cliente,
+        email: `test_${cpf}@test.com`, // Email de teste para sandbox
         phone: {
           area_code: '21', // Rio de Janeiro
-          number: telefone.replace(/\D/g, '')
+          number: telefone.replace(/\D/g, '').substring(0, 9) // Limitar a 9 dígitos
+        },
+        identification: {
+          type: 'CPF',
+          number: cpf.replace(/\D/g, '')
         }
       },
       metadata: {
@@ -111,7 +220,8 @@ app.post('/api/pedidos/criar', async (req, res) => {
         pending: `${process.env.FRONTEND_URL || 'http://localhost:5500'}/pending.html`
       },
       auto_return: 'approved',
-      notification_url: `${process.env.BACKEND_URL}/webhooks/mercado-pago`
+      notification_url: `${process.env.BACKEND_URL || 'https://backendflori.vercel.app'}/webhooks/mercado-pago`,
+      statement_descriptor: 'La Floricultura' // Nome que aparece na fatura
     };
 
     console.log('Criando preferência MP:', preference);
@@ -127,7 +237,11 @@ app.post('/api/pedidos/criar', async (req, res) => {
       }
     );
 
-    const checkoutUrl = mpResponse.data.init_point;
+    // Usar sandbox_init_point se for credencial de teste, senão usar init_point
+    const checkoutUrl = mpResponse.data.sandbox_init_point || mpResponse.data.init_point;
+    
+    console.log('URL do checkout:', checkoutUrl);
+    console.log('É sandbox?', !!mpResponse.data.sandbox_init_point);
 
     // 3. Atualizar pedido com ID do Mercado Pago
     await supabase

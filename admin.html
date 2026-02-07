@@ -7,20 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'paper': '#F7F5F0',
-                        'ink': '#1A1A1A',
-                        'rust': '#8F4F3B',
-                        'pine': '#2F3E35'
+                        'bege': '#E8E3D8',
+                        'bege-dark': '#D4CEC0',
+                        'text-dark': '#2D2D2D',
+                        'text-light': '#707070'
                     },
                     fontFamily: {
-                        'serif': ['"Cormorant Garamond"', 'serif'],
-                        'sans': ['"Montserrat"', 'sans-serif'],
+                        'sans': ['Inter', 'Arial', 'Helvetica', 'sans-serif'],
                     },
                     backgroundImage: {
                         'noise': "url('data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\" opacity=\"0.05\"/%3E%3C/svg%3E')",
@@ -31,6 +30,69 @@
     </script>
     <style>
         body { font-feature-settings: "pnum"; }
+        
+        /* Estilos para drag and drop */
+        .pedido-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .kanban-column {
+            position: relative;
+            pointer-events: auto;
+            min-height: 3000px !important; /* Área escura muito maior */
+        }
+        
+        /* Área dropável que cobre TODA a coluna, mesmo quando expandida */
+        .kanban-column.drag-over {
+            position: relative;
+        }
+        
+        /* Camada azul que cobre TODA a área da coluna */
+        .kanban-column.drag-over::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(59, 130, 246, 0.3) !important;
+            border: 3px dashed #3b82f6 !important;
+            pointer-events: none;
+            z-index: 1;
+            box-sizing: border-box;
+        }
+        
+        /* Texto "Solte aqui" pequeno, centralizado */
+        .kanban-column.drag-over::after {
+            content: 'Solte aqui';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3b82f6;
+            font-size: 16px;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 1000;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* CRÍTICO: Durante o drag, desabilitar TODOS os filhos para que toda a coluna aceite drop */
+        .kanban-column.drag-over * {
+            pointer-events: none !important;
+        }
+        
+        /* Cards não devem bloquear eventos quando não estão sendo arrastados */
+        .pedido-card:not(.dragging) {
+            pointer-events: auto;
+        }
+        
         .stamp-border {
             position: relative;
             background: white;
@@ -45,24 +107,32 @@
         }
         input {
             background-color: transparent !important;
-            border-bottom: 1px solid rgba(26, 26, 26, 0.2);
+            border-bottom: 2px solid rgba(45, 45, 45, 0.15);
             transition: all 0.3s ease;
+            padding: 0.75rem 0;
         }
         input:focus {
-            border-bottom-color: #8F4F3B;
+            border-bottom-color: #2D2D2D;
             outline: none;
         }
+        
+        /* Estilos para drag and drop */
+        .pedido-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        /* CSS duplicado removido - já está acima */
     </style>
 </head>
-<body class="bg-paper text-ink font-serif antialiased selection:bg-rust selection:text-white relative">
-    <div class="fixed inset-0 bg-noise pointer-events-none z-50 mix-blend-multiply"></div>
+<body class="bg-bege text-text-dark font-sans antialiased selection:bg-text-dark selection:text-white relative">
 
     <!-- Modal de Produto -->
     <div id="productModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-ink/10 p-6 flex justify-between items-center">
-                <h2 id="modalTitle" class="text-2xl italic">Adicionar Produto</h2>
-                <button onclick="closeProductModal()" class="text-ink/40 hover:text-ink text-3xl">&times;</button>
+            <div class="sticky top-0 bg-white border-b border-text-dark/10 p-6 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl font-semibold">Adicionar Produto</h2>
+                <button onclick="closeProductModal()" class="text-text-dark/40 hover:text-text-dark text-3xl">&times;</button>
             </div>
             
             <form onsubmit="saveProduct(event)" class="p-6 space-y-6">
@@ -70,18 +140,23 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Nome do Produto *</label>
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-light block mb-2">Nome do Produto *</label>
                         <input type="text" id="productNome" required class="w-full py-2 font-sans">
                     </div>
                     
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Preço (R$) *</label>
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Preço (R$) *</label>
                         <input type="number" step="0.01" id="productPreco" required class="w-full py-2 font-sans">
                     </div>
                     
+                    <div class="md:col-span-2">
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Subtítulo</label>
+                        <input type="text" id="productSubtitulo" class="w-full py-2 font-sans" placeholder="Texto que aparecerá abaixo do título na página do produto">
+                    </div>
+                    
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Categoria *</label>
-                        <select id="productCategoria" required class="w-full py-2 font-sans border-b border-ink/20">
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Categoria *</label>
+                        <select id="productCategoria" required class="w-full py-2 font-sans border-b border-text-dark/20">
                             <option value="">Selecione...</option>
                             <option value="Elegante">Elegante</option>
                             <option value="Romântico">Romântico</option>
@@ -93,8 +168,8 @@
                     </div>
                     
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Tipo *</label>
-                        <select id="productTipo" required class="w-full py-2 font-sans border-b border-ink/20">
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Tipo *</label>
+                        <select id="productTipo" required class="w-full py-2 font-sans border-b border-text-dark/20">
                             <option value="produto">Produto Normal</option>
                             <option value="order_bump">Order Bump</option>
                         </select>
@@ -102,42 +177,49 @@
                 </div>
                 
                 <div>
-                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">URL da Imagem *</label>
-                    <input type="url" id="productImagem" required class="w-full py-2 font-sans">
+                    <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Imagem *</label>
+                    <div class="space-y-3">
+                        <input type="file" id="productImagemFile" accept="image/*" class="w-full py-2 font-sans text-sm" onchange="handleImageUpload(event)">
+                        <div id="imagePreview" class="hidden mb-2">
+                            <img id="previewImg" src="" alt="Preview" class="max-w-xs h-32 object-cover rounded-lg border border-text-dark/20">
+                        </div>
+                        <input type="url" id="productImagem" required class="w-full py-2 font-sans" placeholder="Ou cole uma URL de imagem">
+                        <p class="text-xs text-text-dark/40 font-sans">Faça upload de uma imagem ou cole uma URL</p>
+                    </div>
                 </div>
                 
                 <div>
-                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Descrição</label>
-                    <textarea id="productDescricao" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                    <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Descrição</label>
+                    <textarea id="productDescricao" rows="3" class="w-full py-2 font-sans border-b border-text-dark/20 resize-none"></textarea>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Destaques</label>
-                        <textarea id="productDestaques" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Destaques</label>
+                        <textarea id="productDestaques" rows="3" class="w-full py-2 font-sans border-b border-text-dark/20 resize-none"></textarea>
                     </div>
                     
                     <div>
-                        <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Ocasião</label>
-                        <textarea id="productOcasiao" rows="3" class="w-full py-2 font-sans border-b border-ink/20 resize-none"></textarea>
+                        <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Ocasião</label>
+                        <textarea id="productOcasiao" rows="3" class="w-full py-2 font-sans border-b border-text-dark/20 resize-none"></textarea>
                     </div>
                 </div>
                 
                 <div>
-                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Entrega</label>
+                    <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Entrega</label>
                     <input type="text" id="productEntrega" class="w-full py-2 font-sans">
                 </div>
                 
                 <div>
-                    <label class="font-sans text-xs tracking-widest uppercase text-ink/60 block mb-2">Palavras-chave</label>
+                    <label class="font-sans text-xs tracking-widest uppercase text-text-dark/60 block mb-2">Palavras-chave</label>
                     <input type="text" id="productPalavrasChave" class="w-full py-2 font-sans" placeholder="Separadas por vírgula">
                 </div>
                 
                 <div class="flex gap-4 pt-4">
-                    <button type="submit" class="flex-1 bg-rust text-paper py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-pine transition-colors duration-300">
+                    <button type="submit" class="flex-1 bg-rust text-bege py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-text-dark transition-colors duration-300">
                         Salvar Produto
                     </button>
-                    <button type="button" onclick="closeProductModal()" class="flex-1 border border-ink/20 text-ink py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-ink/5 transition-colors duration-300">
+                    <button type="button" onclick="closeProductModal()" class="flex-1 border border-text-dark/20 text-text-dark py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-text-dark/5 transition-colors duration-300">
                         Cancelar
                     </button>
                 </div>
@@ -146,9 +228,9 @@
     </div>
 
     <!-- Header -->
-    <header class="fixed w-full top-0 bg-paper/90 backdrop-blur-sm z-40 border-b border-ink/5">
+    <header class="fixed w-full top-0 bg-bege/90 backdrop-blur-sm z-40 border-b border-text-dark/5">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-3xl font-normal tracking-tight italic hover:text-rust transition-colors duration-300">
+            <a href="index.html" class="text-3xl font-semibold tracking-tight hover:text-rust transition-colors duration-300">
                 La Floricultura
             </a>
             
@@ -159,7 +241,7 @@
                 </a>
                 <a href="carrinho.html" class="flex items-center gap-2 group">
                     <span>Carrinho</span>
-                    <span class="cart-count bg-ink text-paper w-4 h-4 rounded-full flex items-center justify-center font-serif text-[10px] opacity-0 transition-opacity group-hover:opacity-100">0</span>
+                    <span class="cart-count bg-text-dark text-bege w-4 h-4 rounded-full flex items-center justify-center font-sans text-[10px] opacity-0 transition-opacity group-hover:opacity-100">0</span>
                 </a>
             </div>
         </nav>
@@ -168,10 +250,10 @@
     <!-- Login Section -->
     <section id="loginSection" class="container mx-auto px-6 py-32 min-h-[80vh] flex items-center justify-center">
         <div class="w-full max-w-md p-12 stamp-border bg-white/50 backdrop-blur-sm">
-            <h1 class="text-3xl italic mb-8 text-center text-ink">Área Restrita</h1>
+            <h1 class="text-3xl font-semibold mb-8 text-center text-text-dark">Área Restrita</h1>
             <form onsubmit="handleAdminLogin(event)" class="space-y-8">
                 <div class="space-y-2">
-                    <label class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Senha de Acesso</label>
+                    <label class="font-sans text-[10px] tracking-widest uppercase text-text-dark/40">Senha de Acesso</label>
                     <input 
                         type="password" 
                         id="adminPassword" 
@@ -179,11 +261,11 @@
                         placeholder=""
                         class="w-full py-2 font-sans text-lg text-center tracking-widest">
                 </div>
-                <div id="errorMsg" class="text-rust italic text-sm text-center hidden">Senha incorreta</div>
-                <button type="submit" class="w-full bg-ink text-paper py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300">
+                <div id="errorMsg" class="text-red-600 font-medium text-sm text-center hidden">Senha incorreta</div>
+                <button type="submit" class="w-full bg-text-dark text-bege py-4 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300">
                     Acessar Painel
                 </button>
-                <p class="text-center font-serif italic text-xs text-ink/40 mt-4">
+                <p class="text-center font-sans text-xs text-text-dark/40 mt-4">
                     Acesso exclusivo para funcionários.
                 </p>
             </form>
@@ -192,42 +274,42 @@
 
     <!-- Admin Panel -->
     <section id="adminPanel" class="hidden container mx-auto px-6 pt-32 pb-16 min-h-screen">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-ink/10 pb-8">
-            <h1 class="text-5xl italic">Dashboard</h1>
-            <button onclick="logoutAdmin()" class="font-sans text-xs tracking-widest uppercase text-rust hover:text-ink transition-colors mt-4 md:mt-0">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-text-dark/10 pb-8">
+            <h1 class="text-5xl font-bold">Dashboard</h1>
+            <button onclick="logoutAdmin()" class="font-sans text-xs tracking-widest uppercase text-rust hover:text-text-dark transition-colors mt-4 md:mt-0">
                 Sair do Sistema
             </button>
         </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
-            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
-                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Inventário</p>
-                <p class="text-4xl italic text-ink" id="totalProducts">0</p>
+            <div class="p-6 bg-white border border-text-dark/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-text-dark/40">Inventário</p>
+                <p class="text-4xl font-bold text-text-dark" id="totalProducts">0</p>
             </div>
 
-            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
-                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Categorias</p>
-                <p class="text-4xl italic text-ink" id="totalCategories">0</p>
+            <div class="p-6 bg-white border border-text-dark/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-text-dark/40">Categorias</p>
+                <p class="text-4xl font-bold text-text-dark" id="totalCategories">0</p>
             </div>
 
-            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
-                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Valor Médio</p>
-                <p class="text-3xl italic text-rust" id="avgPrice">R$ 0</p>
+            <div class="p-6 bg-white border border-text-dark/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-text-dark/40">Valor Médio</p>
+                <p class="text-3xl font-bold text-rust" id="avgPrice">R$ 0</p>
             </div>
 
-            <div class="p-6 bg-white border border-ink/5 flex flex-col justify-between h-32">
-                <p class="font-sans text-[10px] tracking-widest uppercase text-ink/40">Item Principal</p>
-                <p class="text-3xl italic text-rust" id="maxPrice">R$ 0</p>
+            <div class="p-6 bg-white border border-text-dark/5 flex flex-col justify-between h-32">
+                <p class="font-sans text-[10px] tracking-widest uppercase text-text-dark/40">Item Principal</p>
+                <p class="text-3xl font-bold text-rust" id="maxPrice">R$ 0</p>
             </div>
         </div>
 
         <!-- Tabs -->
-        <div class="flex gap-4 mb-8 border-b border-ink/10">
+        <div class="flex gap-4 mb-8 border-b border-text-dark/10">
             <button onclick="showTab('produtos')" id="tab-produtos" class="pb-4 px-6 font-sans text-sm tracking-widest uppercase border-b-2 border-rust">
                 Produtos
             </button>
-            <button onclick="showTab('pedidos')" id="tab-pedidos" class="pb-4 px-6 font-sans text-sm tracking-widest uppercase border-b-2 border-transparent hover:border-ink/20">
+            <button onclick="showTab('pedidos')" id="tab-pedidos" class="pb-4 px-6 font-sans text-sm tracking-widest uppercase border-b-2 border-transparent hover:border-text-dark/20">
                 Pedidos
             </button>
         </div>
@@ -235,8 +317,8 @@
         <!-- Products List -->
         <div id="section-produtos">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl italic">Catálogo Vigente</h2>
-                <button onclick="openAddProductModal()" class="bg-rust text-paper px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-pine transition-colors duration-300 rounded-lg shadow-md hover:shadow-xl">
+                <h2 class="text-3xl font-bold">Catálogo Vigente</h2>
+                <button onclick="openAddProductModal()" class="bg-text-dark text-bege px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-text-dark/90 transition-colors duration-300 rounded-lg shadow-md hover:shadow-xl">
                     + Adicionar Produto
                 </button>
             </div>
@@ -248,31 +330,124 @@
         <!-- Orders List -->
         <div id="section-pedidos" class="hidden">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl italic">Pedidos Recentes</h2>
-                <button onclick="loadPedidos()" class="bg-pine text-paper px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300 rounded-lg">
+                <h2 class="text-3xl font-bold">Pedidos Recentes</h2>
+                <button onclick="loadPedidos()" class="bg-text-dark text-bege px-8 py-3 font-sans text-xs tracking-[0.2em] uppercase hover:bg-rust transition-colors duration-300 rounded-lg">
                     🔄 Atualizar
                 </button>
             </div>
             
-            <!-- Filter -->
-            <div class="mb-6 flex gap-4">
-                <button onclick="filterPedidos('todos')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Todos</button>
-                <button onclick="filterPedidos('pendente')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Pendentes</button>
-                <button onclick="filterPedidos('aprovado')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Aprovados</button>
-                <button onclick="filterPedidos('saiu_entrega')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Em Entrega</button>
-                <button onclick="filterPedidos('entregue')" class="px-4 py-2 text-sm border border-ink/20 hover:border-rust hover:text-rust">Entregues</button>
+            <!-- Busca de Pedidos -->
+            <div class="mb-6">
+                <div class="relative max-w-md">
+                    <input 
+                        type="text" 
+                        id="searchPedidos" 
+                        placeholder="Buscar por nome, produto, número do pedido..." 
+                        class="w-full px-4 py-3 pr-12 border-2 border-text-dark/20 rounded-lg focus:border-text-dark/40 focus:outline-none transition-all font-sans text-sm bg-white"
+                        onkeyup="filtrarPedidosKanban()">
+                    <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-text-light pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
             </div>
 
-            <div id="pedidosList" class="space-y-4">
-                <p class="text-center text-ink/40 py-8">Carregando pedidos...</p>
+            <!-- Kanban Board -->
+            <div id="pedidosKanban" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                <!-- Coluna: Pendente -->
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                <h3 class="font-semibold text-sm text-gray-700 uppercase tracking-wide">Pendente</h3>
+                            </div>
+                            <span id="count-pendente" class="bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded-full min-w-[24px] text-center">0</span>
+                        </div>
+                    </div>
+                    <div id="kanban-pendente" 
+                         class="kanban-column relative space-y-3 p-3 bg-gray-50/50"
+                         style="min-height: 3000px;"
+                         ondrop="handleDrop(event, 'pendente')" 
+                         ondragover="handleDragOver(event)"
+                         ondragenter="handleDragEnter(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <!-- Cards serão inseridos aqui -->
+                    </div>
+                </div>
+                
+                <!-- Coluna: Aprovado -->
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <h3 class="font-semibold text-sm text-gray-700 uppercase tracking-wide">Aprovado</h3>
+                            </div>
+                            <span id="count-aprovado" class="bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded-full min-w-[24px] text-center">0</span>
+                        </div>
+                    </div>
+                    <div id="kanban-aprovado" 
+                         class="kanban-column relative space-y-3 p-3 bg-gray-50/50"
+                         style="min-height: 3000px;"
+                         ondrop="handleDrop(event, 'aprovado')" 
+                         ondragover="handleDragOver(event)"
+                         ondragenter="handleDragEnter(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <!-- Cards serão inseridos aqui -->
+                    </div>
+                </div>
+                
+                <!-- Coluna: Em Entrega -->
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                <h3 class="font-semibold text-sm text-gray-700 uppercase tracking-wide">Em Entrega</h3>
+                            </div>
+                            <span id="count-entrega" class="bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded-full min-w-[24px] text-center">0</span>
+                        </div>
+                    </div>
+                    <div id="kanban-entrega" 
+                         class="kanban-column relative space-y-3 p-3 bg-gray-50/50"
+                         style="min-height: 3000px;"
+                         ondrop="handleDrop(event, 'saiu_entrega')" 
+                         ondragover="handleDragOver(event)"
+                         ondragenter="handleDragEnter(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <!-- Cards serão inseridos aqui -->
+                    </div>
+                </div>
+                
+                <!-- Coluna: Entregue -->
+                <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden h-full">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                <h3 class="font-semibold text-sm text-gray-700 uppercase tracking-wide">Entregue</h3>
+                            </div>
+                            <span id="count-entregue" class="bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-1 rounded-full min-w-[24px] text-center">0</span>
+                        </div>
+                    </div>
+                    <div id="kanban-entregue" 
+                         class="kanban-column relative space-y-3 p-3 bg-gray-50/50"
+                         style="min-height: 3000px;"
+                         ondrop="handleDrop(event, 'entregue')" 
+                         ondragover="handleDragOver(event)"
+                         ondragenter="handleDragEnter(event)"
+                         ondragleave="handleDragLeave(event)">
+                        <!-- Cards serão inseridos aqui -->
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-[#EBE8E0] pt-20 pb-10 border-t-4 border-double border-ink/10 mt-auto">
+    <footer class="bg-[#EBE8E0] pt-20 pb-10 border-t-4 border-double border-text-dark/10 mt-auto">
         <div class="container mx-auto px-6">
-            <div class="border-t border-ink/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-sans text-ink/40 uppercase tracking-wider">
+            <div class="border-t border-text-dark/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-sans text-text-dark/40 uppercase tracking-wider">
                 <p>&copy; 2026 La Floricultura. Rio de Janeiro.</p>
                 <div class="flex gap-4 mt-4 md:mt-0">
                     <a href="#" class="hover:text-rust transition-colors">Sistema Interno v2.0</a>
@@ -376,15 +551,43 @@
                 return data || [];
             },
 
-            async updatePedidoStatus(id, status_entrega) {
+            async updatePedidoStatus(id, status_entrega, status_pagamento = null) {
+                const updateData = { 
+                    status_entrega, 
+                    updated_at: new Date().toISOString() 
+                };
+                
+                // Se status_pagamento foi fornecido, atualizar também
+                if (status_pagamento !== null) {
+                    updateData.status_pagamento = status_pagamento;
+                }
+                
                 const { data, error } = await supabaseClient
                     .from('pedidos')
-                    .update({ status_entrega, updated_at: new Date().toISOString() })
+                    .update(updateData)
                     .eq('id', id)
                     .select()
                     .single();
                 if (error) throw error;
                 return data;
+            },
+            
+            async deletePedido(id) {
+                console.log(`🗑️ Tentando excluir pedido ID: ${id}`);
+                const { data, error } = await supabaseClient
+                    .from('pedidos')
+                    .delete()
+                    .eq('id', id)
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Erro do Supabase ao deletar pedido:', error);
+                    console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
+                    throw new Error(error.message || 'Erro ao excluir pedido no banco de dados. Verifique se a política RLS de DELETE está configurada.');
+                }
+                
+                console.log(`✅ Pedido ${id} excluído com sucesso`);
+                return true;
             }
         };
         
@@ -397,14 +600,14 @@
             document.getElementById('section-pedidos').classList.add('hidden');
             
             // Resetar bordas
-            document.getElementById('tab-produtos').classList.remove('border-rust');
+            document.getElementById('tab-produtos').classList.remove('border-text-dark');
             document.getElementById('tab-produtos').classList.add('border-transparent');
-            document.getElementById('tab-pedidos').classList.remove('border-rust');
+            document.getElementById('tab-pedidos').classList.remove('border-text-dark');
             document.getElementById('tab-pedidos').classList.add('border-transparent');
             
             // Mostrar seção ativa
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).classList.add('border-rust');
+            document.getElementById(`tab-${tab}`).classList.add('border-text-dark');
             document.getElementById(`tab-${tab}`).classList.remove('border-transparent');
             
             // Carregar dados
@@ -418,8 +621,11 @@
         let filtroAtivo = 'todos';
 
         window.loadPedidos = async function() {
-            const container = document.getElementById('pedidosList');
-            container.innerHTML = '<p class="text-center text-ink/40 py-8">⏳ Carregando...</p>';
+            // Mostrar loading nas colunas
+            document.getElementById('kanban-pendente').innerHTML = '<p class="text-center text-text-dark/40 py-8">⏳ Carregando...</p>';
+            document.getElementById('kanban-aprovado').innerHTML = '';
+            document.getElementById('kanban-entrega').innerHTML = '';
+            document.getElementById('kanban-entregue').innerHTML = '';
             
             try {
                 todosPedidos = await window.supabaseDB.getAllPedidos();
@@ -427,33 +633,81 @@
                 renderPedidos();
             } catch (error) {
                 console.error('Erro ao carregar pedidos:', error);
-                container.innerHTML = '<p class="text-center text-red-600 py-8">❌ Erro ao carregar pedidos</p>';
+                document.getElementById('kanban-pendente').innerHTML = '<p class="text-center text-red-600 py-8">❌ Erro ao carregar pedidos</p>';
             }
         };
 
+        // Função mantida para compatibilidade, mas não é mais usada no Kanban
         window.filterPedidos = function(filtro) {
-            filtroAtivo = filtro;
+            // No Kanban, os pedidos já são separados por status automaticamente
             renderPedidos();
         };
 
+        let termoBusca = '';
+        
+        function filtrarPedidosKanban() {
+            termoBusca = document.getElementById('searchPedidos')?.value.toLowerCase() || '';
+            renderPedidos();
+        }
+        
         function renderPedidos() {
-            const container = document.getElementById('pedidosList');
-            
+            // Filtrar pedidos por busca
             let pedidosFiltrados = todosPedidos;
-            if (filtroAtivo !== 'todos') {
+            if (termoBusca) {
                 pedidosFiltrados = todosPedidos.filter(p => {
-                    if (filtroAtivo === 'pendente') return p.status_pagamento === 'pendente';
-                    if (filtroAtivo === 'aprovado') return p.status_pagamento === 'aprovado' && p.status_entrega === 'pendente';
-                    return p.status_entrega === filtroAtivo;
+                    const nomeCliente = (p.nome_cliente || '').toLowerCase();
+                    const numeroPedido = (p.numero_pedido || '').toLowerCase();
+                    const cidade = (p.cidade || '').toLowerCase();
+                    const telefone = (p.telefone || '').toLowerCase();
+                    const itens = Array.isArray(p.itens) ? p.itens : JSON.parse(p.itens || '[]');
+                    const nomesProdutos = itens.map(item => (item.nome || '').toLowerCase()).join(' ');
+                    
+                    return nomeCliente.includes(termoBusca) ||
+                           numeroPedido.includes(termoBusca) ||
+                           cidade.includes(termoBusca) ||
+                           telefone.includes(termoBusca) ||
+                           nomesProdutos.includes(termoBusca);
                 });
             }
             
-            if (pedidosFiltrados.length === 0) {
-                container.innerHTML = '<p class="text-center text-ink/40 py-8">Nenhum pedido encontrado</p>';
+            // Limpar colunas do Kanban
+            document.getElementById('kanban-pendente').innerHTML = '';
+            document.getElementById('kanban-aprovado').innerHTML = '';
+            document.getElementById('kanban-entrega').innerHTML = '';
+            document.getElementById('kanban-entregue').innerHTML = '';
+            
+            // Separar pedidos por status
+            const pendentes = pedidosFiltrados.filter(p => p.status_pagamento === 'pendente');
+            // Aprovados: pagamento aprovado mas ainda não iniciou entrega (status_entrega pode ser pendente ou null)
+            const aprovados = pedidosFiltrados.filter(p => 
+                p.status_pagamento === 'aprovado' && 
+                (p.status_entrega === 'pendente' || !p.status_entrega || p.status_entrega === null)
+            );
+            const emEntrega = pedidosFiltrados.filter(p => p.status_entrega === 'saiu_entrega');
+            const entregues = pedidosFiltrados.filter(p => p.status_entrega === 'entregue');
+            
+            // Renderizar cada coluna
+            renderKanbanColumn('kanban-pendente', pendentes);
+            renderKanbanColumn('kanban-aprovado', aprovados);
+            renderKanbanColumn('kanban-entrega', emEntrega);
+            renderKanbanColumn('kanban-entregue', entregues);
+        }
+        
+        function renderKanbanColumn(columnId, pedidos) {
+            const container = document.getElementById(columnId);
+            
+            // Atualizar contador
+            const countId = columnId.replace('kanban-', 'count-');
+            const countEl = document.getElementById(countId);
+            if (countEl) countEl.textContent = pedidos.length;
+            
+            if (pedidos.length === 0) {
+                // Manter a estrutura para aceitar drop mesmo quando vazio
+                container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8 pointer-events-none">Nenhum pedido</p>';
                 return;
             }
             
-            container.innerHTML = pedidosFiltrados.map(pedido => {
+            container.innerHTML = pedidos.map(pedido => {
                 const statusPag = pedido.status_pagamento === 'aprovado' ? '✅' : pedido.status_pagamento === 'rejeitado' ? '❌' : '⏳';
                 const statusEntrega = {
                     'pendente': '📦 Pendente',
@@ -466,45 +720,685 @@
                 const dataEntrega = new Date(pedido.data_entrega).toLocaleDateString('pt-BR');
                 const dataPedido = new Date(pedido.created_at).toLocaleString('pt-BR');
                 
+                const itens = Array.isArray(pedido.itens) ? pedido.itens : JSON.parse(pedido.itens || '[]');
+                const tipoEntrega = pedido.tipo_entrega || pedido.horario_entrega || 'Não informado';
+                const tiposEntrega = {
+                    'comercial': 'Período Comercial',
+                    'manha': 'Período Manhã',
+                    'tarde': 'Período Tarde',
+                    'expressa': 'Entrega Expressa'
+                };
+                const tipoEntregaFormatado = tiposEntrega[tipoEntrega] || tipoEntrega;
+                const valorFrete = pedido.valor_frete || 0;
+                const subtotal = (pedido.valor_total || 0) - valorFrete;
+                
                 return `
-                    <div class="bg-white border border-ink/10 p-6 rounded-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="font-serif text-xl font-bold">${pedido.numero_pedido}</h3>
-                                <p class="text-sm text-ink/60">${dataPedido}</p>
+                    <div class="pedido-card bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-all cursor-move hover:border-gray-300 group"
+                         draggable="true"
+                         ondragstart="handleDragStart(event, ${pedido.id})"
+                         ondragend="handleDragEnd(event)"
+                         onclick="if(!window.isDragging) abrirModalPedido(${pedido.id})"
+                         data-pedido-id="${pedido.id}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-base text-gray-900">${pedido.numero_pedido}</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">${new Date(pedido.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
-                            <div class="text-right">
-                                <p class="text-2xl font-bold text-rust">R$ ${pedido.valor_total.toFixed(2)}</p>
-                                <p class="text-sm">${statusPag} ${pedido.status_pagamento}</p>
+                            <button onclick="event.stopPropagation(); deletarPedido(${pedido.id})" 
+                                    class="text-gray-400 hover:text-red-600 text-lg font-bold ml-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                    title="Excluir pedido">
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div class="mb-3 pb-3 border-b border-gray-100">
+                            <p class="text-xl font-bold text-gray-900 mb-1">R$ ${pedido.valor_total.toFixed(2)}</p>
+                            <p class="text-sm text-gray-700 font-medium">${pedido.nome_cliente}</p>
+                            <p class="text-xs text-gray-500">${pedido.cidade} - ${pedido.estado}</p>
+                        </div>
+                        
+                        <div class="mb-3 space-y-2">
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>${dataEntrega}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                                <span>${itens.length} item(s)</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-gray-600">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="truncate">${tipoEntregaFormatado}</span>
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-                            <div>
-                                <p class="font-semibold">Cliente:</p>
-                                <p>${pedido.nome_cliente}</p>
-                                <p class="text-ink/60">${pedido.telefone}</p>
+                        <div class="flex gap-2">
+                            <button onclick="event.stopPropagation(); gerarCartao(${pedido.id})" 
+                                    class="flex-1 bg-gray-100 text-gray-700 py-2 text-xs font-medium hover:bg-gray-200 transition-colors rounded">
+                                Cartão
+                            </button>
+                            <button onclick="event.stopPropagation(); abrirModalPedido(${pedido.id})" 
+                                    class="flex-1 bg-gray-800 text-white py-2 text-xs font-medium hover:bg-gray-900 transition-colors rounded">
+                                Detalhes
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.atualizarStatusPedido = async function(id, novoStatus, statusPagamento = null) {
+            try {
+                await window.supabaseDB.updatePedidoStatus(id, novoStatus, statusPagamento);
+                console.log(`Status do pedido ${id} atualizado: entrega=${novoStatus}, pagamento=${statusPagamento || 'mantido'}`);
+                await loadPedidos(); // Recarregar
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                alert('Erro ao atualizar status do pedido: ' + (error.message || error));
+                throw error; // Re-throw para que o handleDrop possa tratar
+            }
+        };
+        
+        window.deletarPedido = async function(id) {
+            if (!confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                if (!window.supabaseDB || !window.supabaseDB.deletePedido) {
+                    throw new Error('Função de exclusão não está disponível. Recarregue a página.');
+                }
+                
+                await window.supabaseDB.deletePedido(id);
+                console.log(`✅ Pedido ${id} excluído com sucesso`);
+                
+                // Recarregar pedidos após exclusão
+                await loadPedidos();
+            } catch (error) {
+                console.error('❌ Erro ao excluir pedido:', error);
+                const errorMessage = error.message || error.toString() || 'Erro desconhecido ao excluir pedido';
+                alert('Erro ao excluir pedido:\n\n' + errorMessage + '\n\nVerifique o console (F12) para mais detalhes.');
+            }
+        };
+        
+        window.gerarCartao = function(pedidoId) {
+            const pedido = todosPedidos.find(p => p.id === pedidoId);
+            if (!pedido) {
+                alert('Pedido não encontrado');
+                return;
+            }
+            
+            const mensagem = pedido.mensagem_cartao || 'Com carinho, La Floricultura';
+            const nomeRecebedor = pedido.nome_recebedor || pedido.nome_cliente;
+            const nomeCliente = pedido.nome_cliente;
+            
+            const cartaoHTML = `
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Pinyon+Script&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        /* RESET TOTAL DE IMPRESSÃO */
+        @media print {
+            @page {
+                size: A3 portrait;
+                margin: 0; /* Remove margens da impressora */
+            }
+            body, html {
+                margin: 0;
+                padding: 0;
+                width: 297mm;
+                height: 420mm;
+                background-color: #fffdf9; /* Cor creme para o papel */
+                -webkit-print-color-adjust: exact; /* Força impressão de cores de fundo */
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #cartao-container {
+                width: 297mm !important;
+                height: 420mm !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                overflow: hidden;
+            }
+        }
+
+        /* ESTILOS GERAIS */
+        body {
+            background: #eee;
+            display: flex;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+        }
+
+        #cartao-container {
+            width: 297mm;
+            height: 420mm;
+            background-color: #fffdf9;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden; /* Garante 1 página */
+            color: #2c2c2c;
+            box-sizing: border-box;
+            /* Textura sutil de papel */
+            background-image: radial-gradient(#d4a574 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+        }
+
+        /* Moldura Externa */
+        .moldura-borda {
+            position: absolute;
+            top: 15mm;
+            left: 15mm;
+            right: 15mm;
+            bottom: 15mm;
+            border: 3px solid #d4a574; /* Dourado */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+
+        /* Moldura Interna (Detalhe fino) */
+        .moldura-borda::after {
+            content: '';
+            position: absolute;
+            top: 4mm;
+            left: 4mm;
+            right: 4mm;
+            bottom: 4mm;
+            border: 1px solid #2c2c2c;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Cantoneiras Decorativas (CSS puro) */
+        .canto {
+            position: absolute;
+            width: 40mm;
+            height: 40mm;
+            border-color: #d4a574;
+            border-style: double;
+            border-width: 6px;
+            z-index: 3;
+        }
+        .c-tl { top: 10mm; left: 10mm; border-right: 0; border-bottom: 0; }
+        .c-tr { top: 10mm; right: 10mm; border-left: 0; border-bottom: 0; }
+        .c-bl { bottom: 10mm; left: 10mm; border-right: 0; border-top: 0; }
+        .c-br { bottom: 10mm; right: 10mm; border-left: 0; border-top: 0; }
+
+        /* Logo Estilo Medalhão */
+        .header-logo {
+            margin-top: 35mm;
+            margin-bottom: 20mm;
+            position: relative;
+            z-index: 10;
+        }
+        .logo-img {
+            width: 160px;
+            height: 160px;
+            object-fit: cover; /* Preenche todo o círculo */
+            background-color: #222; /* Fundo escuro para a logo */
+            border-radius: 50%; /* Faz a logo ficar redonda */
+            border: 4px solid #d4a574;
+            padding: 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Conteúdo de Texto */
+        .conteudo {
+            flex: 1;
+            width: 80%; /* Garante margem lateral interna */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .label-pequeno {
+            font-family: 'Lato', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 14pt;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .nome-destaque {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 85pt; /* Tamanho A3 exige fonte gigante */
+            color: #1a1a1a;
+            line-height: 1.1;
+            margin: 0 0 30px 0;
+            text-shadow: 2px 2px 0px rgba(212, 165, 116, 0.2);
+        }
+
+        .mensagem-box {
+            position: relative;
+            padding: 40px;
+            margin: 20px 0;
+            width: 100%;
+        }
+        
+        /* Aspas decorativas gigantes */
+        .mensagem-box::before {
+            content: '"';
+            position: absolute;
+            top: -40px;
+            left: 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 150px;
+            color: #d4a574;
+            opacity: 0.2;
+        }
+
+        .texto-mensagem {
+            font-family: 'Playfair Display', serif;
+            font-size: 28pt;
+            line-height: 1.6;
+            color: #333;
+            font-style: italic;
+            white-space: pre-wrap;
+        }
+
+        /* Rodapé */
+        .footer {
+            margin-bottom: 30mm;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .pedido-id {
+            margin-top: 30px;
+            font-family: 'Lato', sans-serif;
+            font-size: 10pt;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            display: inline-block;
+        }
+
+        /* Elemento Decorativo de Fundo (Marca d'água) */
+        .marca-dagua {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 120px;
+            opacity: 0.03;
+            pointer-events: none;
+            color: #000;
+            font-family: 'Pinyon Script', cursive;
+            z-index: 0;
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+
+    <div id="cartao-container">
+        <div class="canto c-tl"></div>
+        <div class="canto c-tr"></div>
+        <div class="canto c-bl"></div>
+        <div class="canto c-br"></div>
+
+        <div class="moldura-borda">
+            
+            <div class="header-logo">
+                <img src="img/LOGO - SITE.png" class="logo-img" alt="La Floricultura">
+            </div>
+
+            <div class="conteudo">
+                <div class="label-pequeno">Para</div>
+                <h1 class="nome-destaque">${nomeRecebedor}</h1>
+
+                <div style="width: 100px; height: 2px; background: #d4a574; margin: 20px auto;"></div>
+
+                <div class="mensagem-box">
+                    <p class="texto-mensagem">${mensagem}</p>
+                </div>
+
+                <div class="label-pequeno" style="margin-top: 40px;">Com todo carinho,</div>
+                <h2 class="nome-destaque" style="font-size: 50pt;">${nomeCliente}</h2>
+            </div>
+
+            <div class="footer">
+                <div class="pedido-id">PEDIDO #${pedido.numero_pedido}</div>
+            </div>
+            
+            <div class="marca-dagua">La Floricultura</div>
+        </div>
+    </div>
+
+    <div class="no-print" style="position: fixed; bottom: 30px; right: 30px; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.3); border-radius: 10px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: sans-serif; font-size: 14px; color: #666; margin-bottom: 5px;">
+            ⚠️ <strong>Atenção na Impressão:</strong><br>
+            1. Destino: Salvar como PDF ou Impressora<br>
+            2. Tamanho do Papel: <strong>A3</strong><br>
+            3. Margens: <strong>Nenhuma</strong><br>
+            4. Escala: <strong>100% (ou Padrão)</strong><br>
+            5. Marcar "Gráficos de plano de fundo"
+        </div>
+        <button onclick="window.print()" style="background: #2c2c2c; color: #d4a574; padding: 15px; border: none; cursor: pointer; font-weight: bold; font-size: 16px; border-radius: 5px;">🖨️ IMPRIMIR AGORA</button>
+        <button onclick="this.closest('.fixed').remove()" style="background: #eee; color: #333; padding: 10px; border: none; cursor: pointer; border-radius: 5px;">Fechar Janela</button>
+    </div>
+`;
+            // Criar modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-auto';
+            modal.innerHTML = cartaoHTML;
+            modal.onclick = (e) => {
+                if (e.target === modal || e.target.classList.contains('no-print')) modal.remove();
+            };
+            document.body.appendChild(modal);
+        };
+        
+        // Drag and Drop
+        let pedidoSendoArrastado = null;
+        window.isDragging = false;
+        
+        window.handleDragStart = function(event, pedidoId) {
+            window.isDragging = true;
+            pedidoSendoArrastado = pedidoId;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', pedidoId.toString());
+            event.currentTarget.classList.add('dragging');
+            
+            // Pequeno delay para garantir que o drag foi iniciado
+            setTimeout(() => {
+                if (window.isDragging) {
+                    event.currentTarget.style.opacity = '0.5';
+                }
+            }, 0);
+        };
+        
+        window.handleDragEnd = function(event) {
+            window.isDragging = false;
+            pedidoSendoArrastado = null;
+            
+            // Remover todas as classes de drag
+            document.querySelectorAll('.pedido-card').forEach(card => {
+                card.classList.remove('dragging');
+                card.style.opacity = '';
+            });
+            
+            // Remover drag-over de todas as colunas
+            document.querySelectorAll('.kanban-column').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+        };
+        
+        window.handleDragOver = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'move';
+                event.dataTransfer.effectAllowed = 'move';
+            }
+            
+            // Usar event.target para sempre encontrar a coluna, mesmo se o evento veio de qualquer filho
+            let target = event.target.closest('.kanban-column') || event.currentTarget;
+            if (!target || !target.classList.contains('kanban-column')) {
+                return false;
+            }
+            
+            if (!target.classList.contains('drag-over')) {
+                target.classList.add('drag-over');
+            }
+            
+            return false;
+        };
+        
+        window.handleDragEnter = function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Usar event.target para sempre encontrar a coluna, mesmo se o evento veio de qualquer filho
+            let target = event.target.closest('.kanban-column') || event.currentTarget;
+            if (!target || !target.classList.contains('kanban-column')) {
+                return false;
+            }
+            
+            if (!target.classList.contains('drag-over')) {
+                target.classList.add('drag-over');
+            }
+            
+            return false;
+        };
+        
+        window.handleDragLeave = function(event) {
+            // Garantir que é a coluna kanban
+            let currentTarget = event.currentTarget;
+            if (!currentTarget.classList.contains('kanban-column')) {
+                currentTarget = currentTarget.closest('.kanban-column');
+                if (!currentTarget) return;
+            }
+            
+            const relatedTarget = event.relatedTarget;
+            
+            // Se está saindo para um filho da mesma coluna, não fazer nada
+            if (relatedTarget && currentTarget.contains(relatedTarget)) {
+                return;
+            }
+            
+            // Verificar coordenadas para garantir que realmente saiu
+            const rect = currentTarget.getBoundingClientRect();
+            const x = event.clientX;
+            const y = event.clientY;
+            
+            // Tolerância de 10px para evitar remoção acidental
+            const tolerance = 10;
+            if (x < rect.left - tolerance || x > rect.right + tolerance || 
+                y < rect.top - tolerance || y > rect.bottom + tolerance) {
+                currentTarget.classList.remove('drag-over');
+            }
+        };
+        
+        window.handleDrop = async function(event, novoStatus) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Usar event.target para sempre encontrar a coluna, mesmo se o evento veio de qualquer filho
+            let target = event.target.closest('.kanban-column') || event.currentTarget;
+            
+            // Remover drag-over de TODAS as colunas
+            document.querySelectorAll('.kanban-column').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+            
+            let pedidoId = pedidoSendoArrastado;
+            
+            // Se não tiver o ID, tentar pegar do dataTransfer
+            if (!pedidoId && event.dataTransfer) {
+                try {
+                    const data = event.dataTransfer.getData('text/plain');
+                    if (data) {
+                        pedidoId = parseInt(data);
+                    }
+                } catch (e) {
+                    console.error('Erro ao ler dataTransfer:', e);
+                }
+            }
+            
+            if (!pedidoId) {
+                console.warn('Nenhum pedido encontrado para mover');
+                pedidoSendoArrastado = null;
+                window.isDragging = false;
+                return;
+            }
+            
+            console.log(`🔄 Movendo pedido ${pedidoId} para coluna: ${novoStatus}`);
+            
+            // Buscar o pedido atual para saber seu status atual
+            const pedidoAtual = todosPedidos.find(p => p.id === pedidoId);
+            if (!pedidoAtual) {
+                console.error('Pedido não encontrado:', pedidoId);
+                alert('Erro: Pedido não encontrado');
+                await loadPedidos();
+                return;
+            }
+            
+            // Mapear status do Kanban para status_entrega e status_pagamento
+            let statusEntrega;
+            let statusPagamento = null; // null = não alterar
+            
+            switch(novoStatus) {
+                case 'pendente':
+                    // Coluna Pendente: status_pagamento = 'pendente'
+                    statusEntrega = 'pendente';
+                    statusPagamento = 'pendente';
+                    break;
+                case 'aprovado':
+                    // Coluna Aprovado: status_pagamento = 'aprovado', status_entrega = 'pendente'
+                    statusEntrega = 'pendente';
+                    statusPagamento = 'aprovado';
+                    break;
+                case 'saiu_entrega':
+                    // Coluna Em Entrega: status_entrega = 'saiu_entrega'
+                    statusEntrega = 'saiu_entrega';
+                    // Manter status_pagamento atual (geralmente 'aprovado')
+                    break;
+                case 'entregue':
+                    // Coluna Entregue: status_entrega = 'entregue'
+                    statusEntrega = 'entregue';
+                    // Manter status_pagamento atual
+                    break;
+                default:
+                    statusEntrega = novoStatus;
+            }
+            
+            console.log(`📝 Atualizando: entrega=${statusEntrega}, pagamento=${statusPagamento || pedidoAtual.status_pagamento}`);
+            
+            // Remover o card visualmente da coluna atual ANTES de atualizar
+            const cardElement = document.querySelector(`[data-pedido-id="${pedidoId}"]`);
+            if (cardElement) {
+                cardElement.remove();
+            }
+            
+            // Atualizar status (isso já chama loadPedidos internamente)
+            try {
+                await atualizarStatusPedido(pedidoId, statusEntrega, statusPagamento);
+                console.log(`✅ Pedido ${pedidoId} movido com sucesso para ${novoStatus}`);
+            } catch (error) {
+                console.error('❌ Erro ao atualizar status:', error);
+                alert('Erro ao atualizar status do pedido: ' + (error.message || error));
+                // Se der erro, recarregar para restaurar o estado
+                await loadPedidos();
+            }
+            
+            pedidoSendoArrastado = null;
+            window.isDragging = false;
+            
+            // Remover classe dragging de todos os cards
+            document.querySelectorAll('.pedido-card').forEach(card => {
+                card.classList.remove('dragging');
+            });
+        };
+        
+        // Modal de detalhes do pedido
+        window.abrirModalPedido = function(pedidoId) {
+            const pedido = todosPedidos.find(p => p.id === pedidoId);
+            if (!pedido) {
+                alert('Pedido não encontrado');
+                return;
+            }
+            
+            const dataEntrega = new Date(pedido.data_entrega).toLocaleDateString('pt-BR');
+            const dataPedido = new Date(pedido.created_at).toLocaleString('pt-BR');
+            const itens = Array.isArray(pedido.itens) ? pedido.itens : JSON.parse(pedido.itens || '[]');
+            const tipoEntrega = pedido.tipo_entrega || pedido.horario_entrega || 'Não informado';
+            const tiposEntrega = {
+                'comercial': 'Período Comercial (8h30 às 18h00) - Grátis',
+                'manha': 'Período Manhã (8h30 às 13h00) - R$ 22,90',
+                'tarde': 'Período Tarde (13h às 19h) - R$ 22,90',
+                'expressa': 'Entrega Expressa (até 2h) - R$ 36,90'
+            };
+            const tipoEntregaFormatado = tiposEntrega[tipoEntrega] || tipoEntrega;
+            const valorFrete = pedido.valor_frete || 0;
+            const subtotal = (pedido.valor_total || 0) - valorFrete;
+            
+            const modalHTML = `
+                <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center z-10">
+                        <h2 class="text-3xl font-bold">Pedido ${pedido.numero_pedido}</h2>
+                        <button onclick="this.closest('.fixed').remove()" class="text-2xl text-text-dark/60 hover:text-text-dark">×</button>
+                    </div>
+                    
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Dados do Cliente -->
+                            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg mb-4 border-b border-gray-200 pb-2">Cliente</h3>
+                                <div class="space-y-2 text-sm font-sans">
+                                    <p><span class="font-semibold">Nome:</span> ${pedido.nome_cliente}</p>
+                                    <p><span class="font-semibold">Telefone:</span> ${pedido.telefone}</p>
+                                    <p><span class="font-semibold">CPF:</span> ${pedido.cpf}</p>
+                                    <p><span class="font-semibold">Quem recebe:</span> ${pedido.nome_recebedor || 'Não informado'}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="font-semibold">Entrega:</p>
-                                <p>${dataEntrega} - ${pedido.horario_entrega}</p>
-                                <p class="text-ink/60">${pedido.cidade} - ${pedido.bairro}</p>
+                            
+                            <!-- Endereço -->
+                            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg mb-4 border-b border-gray-200 pb-2">Endereço</h3>
+                                <div class="space-y-2 text-sm font-sans">
+                                    <p><span class="font-semibold">CEP:</span> ${pedido.cep}</p>
+                                    <p>${pedido.rua}, ${pedido.numero}${pedido.complemento ? ' - ' + pedido.complemento : ''}</p>
+                                    <p>${pedido.bairro}, ${pedido.cidade} - ${pedido.estado}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Entrega -->
+                            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg mb-4 border-b border-gray-200 pb-2">Entrega</h3>
+                                <div class="space-y-2 text-sm font-sans">
+                                    <p><span class="font-semibold">Data:</span> ${dataEntrega}</p>
+                                    <p><span class="font-semibold">Tipo:</span> ${tipoEntregaFormatado}</p>
+                                    ${pedido.instrucoes_adicionais ? `<p><span class="font-semibold">Instruções:</span> ${pedido.instrucoes_adicionais}</p>` : ''}
+                                    ${pedido.mensagem_cartao ? `<p><span class="font-semibold">Mensagem no cartão:</span> ${pedido.mensagem_cartao}</p>` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Resumo Financeiro -->
+                            <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg mb-4 border-b border-gray-200 pb-2">Resumo</h3>
+                                <div class="space-y-2 text-sm font-sans">
+                                    <p><span class="font-semibold">Subtotal:</span> R$ ${subtotal.toFixed(2)}</p>
+                                    ${valorFrete > 0 ? `<p><span class="font-semibold">Frete:</span> R$ ${valorFrete.toFixed(2)}</p>` : '<p><span class="font-semibold">Frete:</span> Grátis</p>'}
+                                    <p class="text-lg font-bold border-t border-text-dark/10 pt-2"><span class="font-semibold">Total:</span> R$ ${pedido.valor_total.toFixed(2)}</p>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <p class="font-semibold text-sm mb-2">Produtos:</p>
-                            <ul class="text-sm text-ink/80">
-                                ${JSON.parse(JSON.stringify(pedido.itens)).map(item => 
-                                    `<li>• ${item.nome} (${item.quantidade || 1}x R$ ${item.preco.toFixed(2)})</li>`
-                                ).join('')}
-                            </ul>
+                        <!-- Produtos -->
+                        <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                            <h3 class="font-semibold text-lg mb-4 border-b border-gray-200 pb-2">Produtos</h3>
+                            <div class="space-y-3">
+                                ${itens.map(item => {
+                                    const qtd = item.quantidade || 1;
+                                    const total = (item.preco * qtd).toFixed(2);
+                                    return `<div class="flex justify-between items-center py-2 border-b border-text-dark/5">
+                                        <div>
+                                            <p class="font-sans font-medium">${item.nome}</p>
+                                            <p class="text-xs text-text-light">Quantidade: ${qtd} × R$ ${item.preco.toFixed(2)}</p>
+                                        </div>
+                                        <p class="font-sans font-bold">R$ ${total}</p>
+                                    </div>`;
+                                }).join('')}
+                            </div>
                         </div>
                         
-                        <div class="flex gap-2 items-center">
-                            <label class="text-sm font-semibold">Status:</label>
-                            <select onchange="atualizarStatusPedido(${pedido.id}, this.value)" 
-                                    class="flex-1 py-2 px-3 border border-ink/20 rounded text-sm"
+                        <!-- Status e Ações -->
+                        <div class="flex gap-4 items-center pt-4 border-t border-text-dark/10">
+                            <label class="text-sm font-semibold font-sans">Status de Entrega:</label>
+                            <select onchange="atualizarStatusPedido(${pedido.id}, this.value); this.closest('.fixed').remove(); loadPedidos();" 
+                                    class="flex-1 py-2 px-3 border border-text-dark/20 rounded text-sm font-sans bg-white"
                                     ${pedido.status_pagamento !== 'aprovado' ? 'disabled' : ''}>
                                 <option value="pendente" ${pedido.status_entrega === 'pendente' ? 'selected' : ''}>📦 Pendente</option>
                                 <option value="separando" ${pedido.status_entrega === 'separando' ? 'selected' : ''}>📋 Separando</option>
@@ -512,24 +1406,84 @@
                                 <option value="entregue" ${pedido.status_entrega === 'entregue' ? 'selected' : ''}>✅ Entregue</option>
                                 <option value="cancelado" ${pedido.status_entrega === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
                             </select>
+                            <button onclick="gerarCartao(${pedido.id})" class="bg-text-dark text-bege px-6 py-2 rounded-lg font-sans text-sm hover:bg-text-dark/90">
+                                🎴 Gerar Cartão
+                            </button>
                         </div>
                     </div>
-                `;
-            }).join('');
-        }
-
-        window.atualizarStatusPedido = async function(id, novoStatus) {
-            try {
-                await window.supabaseDB.updatePedidoStatus(id, novoStatus);
-                console.log(`Status do pedido ${id} atualizado para ${novoStatus}`);
-                await loadPedidos(); // Recarregar
-            } catch (error) {
-                console.error('Erro ao atualizar status:', error);
-                alert('Erro ao atualizar status do pedido');
-            }
+                </div>
+            `;
+            
+            // Criar modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+            modal.innerHTML = modalHTML;
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            document.body.appendChild(modal);
         };
     </script>
     <script src="js/cart.js"></script>
     <script src="js/admin.js"></script>
+    <script>
+        // Função para fazer upload de imagem
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validar tipo de arquivo
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecione apenas arquivos de imagem.');
+                return;
+            }
+
+            // Validar tamanho (máximo 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('A imagem deve ter no máximo 5MB.');
+                return;
+            }
+
+            try {
+                // Mostrar preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+
+                // Fazer upload para Supabase Storage
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const filePath = `produtos/${fileName}`;
+
+                const { data, error } = await supabaseClient.storage
+                    .from('produtos-imagens')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) {
+                    console.error('Erro no upload:', error);
+                    alert('Erro ao fazer upload da imagem. Tente novamente ou use uma URL.');
+                    return;
+                }
+
+                // Obter URL pública
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from('produtos-imagens')
+                    .getPublicUrl(filePath);
+
+                // Preencher campo de URL
+                document.getElementById('productImagem').value = publicUrl;
+                console.log('✅ Imagem enviada:', publicUrl);
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao fazer upload da imagem. Tente novamente ou use uma URL.');
+            }
+        }
+    </script>
 </body>
 </html>

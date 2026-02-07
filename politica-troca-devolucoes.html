@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Troca e Devoluções - La Floricultura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bege': '#E8E3D8',
+                        'bege-dark': '#D4CEC0',
+                        'text-dark': '#2D2D2D',
+                        'text-light': '#707070'
+                    },
+                    fontFamily: {
+                        'serif': ['"Crimson Text"', 'serif'],
+                        'sans': ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-feature-settings: "pnum"; }
+    </style>
+</head>
+<body class="bg-bege text-text-dark font-serif antialiased">
+    <style>
+        .logo-circular {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center center;
+            overflow: hidden;
+        }
+        
+        /* Animação de pulso para o botão WhatsApp */
+        @keyframes pulse-whatsapp {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .whatsapp-button {
+            animation: pulse-whatsapp 2s ease-in-out infinite;
+        }
+        
+        .whatsapp-button:hover {
+            animation: none;
+        }
+    </style>
+    
+    <!-- Header -->
+    <header class="fixed w-full top-0 bg-bege/98 backdrop-blur-sm z-40 border-b border-text-dark/10 shadow-sm">
+        <nav class="container mx-auto px-4 md:px-6 py-3 md:py-4 flex flex-wrap items-center gap-3 md:gap-4">
+            <!-- Logo -->
+            <a href="index.html" class="flex-shrink-0">
+                <img src="img/LOGO - SITE.png" alt="La Floricultura" class="logo-circular">
+            </a>
+            
+            <!-- Links e Carrinho -->
+            <div class="flex items-center gap-2 md:gap-4 flex-shrink-0 ml-auto">
+                <a href="index.html#produtos" class="hidden lg:block font-sans text-xs md:text-sm text-text-dark hover:text-text-dark/60 transition-colors">
+                    Produtos
+                </a>
+                <a href="admin.html" class="hidden lg:block font-sans text-xs md:text-sm text-text-dark hover:text-text-dark/60 transition-colors">
+                    Admin
+                </a>
+                <a href="carrinho.html" class="flex items-center gap-2 md:gap-3 bg-text-dark text-bege px-4 md:px-6 py-2 md:py-3 rounded-full hover:bg-text-dark/90 transition-all shadow-md hover:shadow-lg">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span class="hidden md:inline font-sans text-xs md:text-sm font-medium">Carrinho</span>
+                    <span class="cart-count bg-bege text-text-dark w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold">0</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Botão WhatsApp Flutuante -->
+    <a href="https://wa.me/5521999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20os%20produtos%20da%20La%20Floricultura" 
+       target="_blank" 
+       class="whatsapp-button fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:bg-[#20BA5A] transition-all duration-300 hover:scale-110 group">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.98 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+        </svg>
+        <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-[#25D366] text-white px-3 py-2 rounded-lg text-sm font-sans whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Fale conosco
+        </span>
+    </a>
+
+    <!-- Conteúdo -->
+    <main class="container mx-auto px-6 pt-32 pb-16 max-w-4xl">
+        <h1 class="text-4xl md:text-5xl font-light mb-8">Política de Troca e Devoluções</h1>
+        
+        <div class="prose prose-lg max-w-none font-sans text-base space-y-6">
+            <p class="text-text-light">
+                Na La Floricultura, prezamos pela sua satisfação. Caso não fique satisfeito com seu pedido, oferecemos a possibilidade de troca ou devolução.
+            </p>
+
+            <h2 class="font-serif text-2xl font-semibold mt-8 mb-4">Prazo para Solicitação</h2>
+            <p>
+                Você tem até <strong>7 dias corridos</strong> após o recebimento do produto para solicitar a troca ou devolução.
+            </p>
+
+            <h2 class="font-serif text-2xl font-semibold mt-8 mb-4">Condições para Troca/Devolução</h2>
+            <ul class="list-disc list-inside space-y-2 ml-4">
+                <li>O produto deve estar em sua embalagem original</li>
+                <li>Produtos perecíveis (flores frescas) não podem ser trocados ou devolvidos</li>
+                <li>Produtos personalizados ou com mensagem não podem ser trocados</li>
+                <li>O produto não pode ter sido usado ou danificado pelo cliente</li>
+            </ul>
+
+            <h2 class="font-serif text-2xl font-semibold mt-8 mb-4">Como Solicitar</h2>
+            <p>
+                Entre em contato conosco através do email <strong>contato@lafloricultura.com</strong> ou pelo telefone <strong>(21) 99999-9999</strong> informando:
+            </p>
+            <ul class="list-disc list-inside space-y-2 ml-4">
+                <li>Número do pedido</li>
+                <li>Motivo da troca/devolução</li>
+                <li>Fotos do produto (se aplicável)</li>
+            </ul>
+
+            <h2 class="font-serif text-2xl font-semibold mt-8 mb-4">Reembolso</h2>
+            <p>
+                Em caso de devolução aprovada, o reembolso será processado no mesmo método de pagamento utilizado na compra, em até <strong>10 dias úteis</strong> após o recebimento do produto em nosso estoque.
+            </p>
+
+            <h2 class="font-serif text-2xl font-semibold mt-8 mb-4">Dúvidas</h2>
+            <p>
+                Para mais informações, entre em contato conosco através dos canais disponíveis.
+            </p>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-text-dark/10">
+            <a href="index.html" class="inline-block bg-text-dark text-bege px-8 py-3 rounded-lg font-sans text-sm hover:bg-text-dark/90 transition-colors">
+                Voltar para o Início
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-text-dark pt-16 pb-10 border-t border-text-dark mt-20">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                <div>
+                    <h3 class="text-2xl font-light mb-4 text-bege">La Floricultura</h3>
+                    <p class="font-sans text-sm text-bege/60">
+                        Design botânico desde 2026.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-sans text-xs tracking-widest uppercase mb-4 text-bege/60">Navegação</h4>
+                    <ul class="space-y-2 font-sans text-sm text-bege/80">
+                        <li><a href="index.html" class="hover:text-bege transition-colors">Início</a></li>
+                        <li><a href="index.html#produtos" class="hover:text-bege transition-colors">Produtos</a></li>
+                        <li><a href="carrinho.html" class="hover:text-bege transition-colors">Carrinho</a></li>
+                        <li><a href="admin.html" class="hover:text-bege transition-colors">Admin</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-sans text-xs tracking-widest uppercase mb-4 text-bege/60">Políticas</h4>
+                    <ul class="space-y-2 font-sans text-sm text-bege/80">
+                        <li><a href="politica-troca-devolucoes.html" class="hover:text-bege transition-colors">Política de Troca e Devoluções</a></li>
+                        <li><a href="politica-privacidade.html" class="hover:text-bege transition-colors">Política de Privacidade</a></li>
+                        <li><a href="politica-envio-reembolso.html" class="hover:text-bege transition-colors">Política de Envio e Reembolso</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-sans text-xs tracking-widest uppercase mb-4 text-bege/60">Contato</h4>
+                    <ul class="space-y-2 font-sans text-sm text-bege/80">
+                        <li>contato@lafloricultura.com</li>
+                        <li>(21) 99999-9999</li>
+                        <li class="pt-2 text-xs">Seg — Sáb: 9h às 19h</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-bege/10 pt-6 text-center text-xs font-sans text-bege/40 uppercase tracking-wider">
+                <p>&copy; 2026 La Floricultura. Rio de Janeiro.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+
