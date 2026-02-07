@@ -852,9 +852,45 @@
                 size: A4 portrait;
                 margin: 10mm;
             }
-            body {
-                margin: 0;
-                padding: 0;
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                overflow: hidden !important;
+            }
+            /* Ocultar TUDO do admin, exceto o resumo */
+            body > *:not(.fixed) {
+                display: none !important;
+            }
+            /* Ocultar especificamente o modal de produto e outros modais */
+            #productModal,
+            #modalPedido {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            /* Mostrar apenas o modal do resumo */
+            .fixed {
+                position: static !important;
+                background: transparent !important;
+                inset: auto !important;
+                z-index: auto !important;
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                visibility: visible !important;
+            }
+            /* Ocultar tudo dentro do modal exceto o resumo-container */
+            .fixed > *:not(#resumo-container) {
+                display: none !important;
+            }
+            .fixed > .no-print {
+                display: none !important;
+            }
+            /* Garantir que o resumo-container seja visível */
+            #resumo-container {
+                display: block !important;
+                visibility: visible !important;
             }
             .no-print {
                 display: none !important;
@@ -866,18 +902,28 @@
                 border: 1px solid #000 !important;
             }
             #resumo-container {
-                width: 100% !important;
+                width: 190mm !important;
                 max-width: 190mm !important;
                 min-height: auto !important;
                 height: auto !important;
+                max-height: 277mm !important;
                 padding: 10mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 page-break-after: avoid !important;
                 page-break-inside: avoid !important;
-                overflow: visible !important;
+                page-break-before: avoid !important;
+                overflow: hidden !important;
+                position: relative !important;
+                display: block !important;
             }
+            #resumo-container > * {
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+            }
+            /* Evitar quebras de página em qualquer elemento */
             * {
                 page-break-inside: avoid !important;
+                page-break-after: avoid !important;
             }
         }
         
@@ -1132,6 +1178,14 @@
                 if (e.target === modal || (e.target.classList && e.target.classList.contains('no-print'))) return;
             };
             document.body.appendChild(modal);
+            
+            // Adicionar ID único ao body para impressão
+            const resumoId = 'resumo-print-' + Date.now();
+            document.body.setAttribute('data-printing', resumoId);
+            const resumoContainer = modal.querySelector('#resumo-container');
+            if (resumoContainer) {
+                resumoContainer.setAttribute('data-print-id', resumoId);
+            }
             
             // Carregar SignaturePad e inicializar após inserir no DOM
             const script = document.createElement('script');
